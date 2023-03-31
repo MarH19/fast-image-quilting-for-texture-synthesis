@@ -1,5 +1,6 @@
-typedef struct{
-    unsigned char* data;
+typedef struct
+{
+    unsigned char *data;
     int width;
     int height;
     int channels;
