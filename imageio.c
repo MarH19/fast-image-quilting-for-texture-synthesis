@@ -17,7 +17,7 @@ image_t imread(char *path)
     pixel_t *image = malloc(sizeof(pixel_t) * n);
     assert(image);
     for (int i = 0; i < n; i++)
-        image[i] = (pixel_t) uimage[i];
+        image[i] = (pixel_t)uimage[i];
 
     image_t in_image = {image, width, height, channels};
 
@@ -25,22 +25,57 @@ image_t imread(char *path)
     return in_image;
 }
 
-void imwrite(image_t image, char *path) {
+void imwrite(image_t image, char *path)
+{
     int n = image.width * image.height * image.channels;
 
-    unsigned char * out_image = malloc(sizeof(unsigned char) * n);
+    unsigned char *out_image = malloc(sizeof(unsigned char) * n);
     assert(out_image);
-    for (int i = 0; i < n; i++) {
-        out_image[i] = (unsigned char) image.data[i];
+    for (int i = 0; i < n; i++)
+    {
+        out_image[i] = (unsigned char)image.data[i];
     }
     stbi_write_png(path, image.width, image.height, image.channels, out_image, image.width * image.channels);
     free(out_image);
     out_image = NULL;
-
 }
 
-void imfree(image_t image) {
+void imfree(image_t image)
+{
     free(image.data);
+}
+
+/* slice_image: start inclusive, end exclusive */
+slice_t slice_image(image_t image, int start_row, int start_col, int end_row, int end_col)
+{
+    int jumpsize;
+    pixel_t *startptr;
+    slice_t slice;
+
+    jumpsize = image.width * image.channels;
+    startptr = image.data + start_row * jumpsize + image.channels * start_col;
+
+    slice.height = end_row - start_row;
+    slice.width = end_col - start_col;
+    slice.channels = image.channels;
+    slice.data = startptr;
+    slice.jumpsize = jumpsize;
+
+    return slice;
+}
+
+slice_t slice_slice(slice_t sin, int start_row, int start_col, int end_row, int end_col)
+{
+    pixel_t * startptr;
+    slice_t slice;
+
+    startptr = sin.data + start_row * sin.jumpsize + sin.channels * start_col;
+    slice.height = end_row - start_row;
+    slice.width = end_col - start_col;
+    slice.channels = sin.channels;
+    slice.data = startptr;
+    slice.jumpsize = sin.jumpsize;
+    return slice;
 }
 
 int main()
@@ -49,6 +84,19 @@ int main()
     printf("Image width: %d\n", in_image.width);
     printf("Image height: %d\n", in_image.height);
     printf("Number of channels: %d\n", in_image.channels);
+    slice_t slice = slice_image(in_image, 50, 50, 70, 70);
+    printf("%d %d %d\n", slice.width, slice.height, slice.channels);
+    int n = slice.width * slice.height * slice.channels;
+    printf("%d\n", n);
+    unsigned char *out_image = malloc(sizeof(unsigned char) * n);
+    assert(out_image);
+    for (int row = 0; row < slice.height; row++) {
+        for (int col = 0; col < slice.width*slice.channels; col++) {
+            out_image[row*(slice.width*slice.channels) + col] = (unsigned char) slice.data[row * slice.jumpsize + col];
+        }
+    }
+    stbi_write_png("out1.jpg", slice.width, slice.height, slice.channels, out_image, slice.channels*slice.width);
+
     imwrite(in_image, "out.png");
     imfree(in_image);
 
