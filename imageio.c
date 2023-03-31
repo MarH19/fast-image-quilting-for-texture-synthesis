@@ -5,6 +5,8 @@
 #include "stb_image.h"
 #include "stb_image_write.h"
 
+extern double l2norm(slice_t inp_slice, slice_t out_slice);
+
 image_t imread(char *path)
 {
     int width, height, channels, n;
@@ -96,6 +98,12 @@ int main()
         }
     }
     stbi_write_png("out1.jpg", slice.width, slice.height, slice.channels, out_image, slice.channels*slice.width);
+    printf("%f\n", l2norm(slice, slice));
+    pixel_t arr1[] = {1.0, 1.0, 1.0, 1.0};
+    pixel_t arr2[] = {0.0, 0.0, 0.0, 0.0};
+    slice_t s1 = {arr1, 2, 2, 1, 2};
+    slice_t s2 = {arr2, 2, 2, 1, 2};
+    printf("%f\n", l2norm(s1, s2));
 
     imwrite(in_image, "out.png");
     imfree(in_image);
