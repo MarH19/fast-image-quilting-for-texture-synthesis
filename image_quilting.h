@@ -8,6 +8,7 @@ typedef struct
     int channels;
 } image_t;
 
+// struct that allows for better acces of slices
 typedef struct{
     pixel_t * data;
     int width;
