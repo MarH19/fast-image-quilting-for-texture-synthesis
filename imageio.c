@@ -6,6 +6,7 @@
 #include "stb_image_write.h"
 
 extern double l2norm(slice_t inp_slice, slice_t out_slice);
+extern pixel_t *dpcut(slice_t slice_1, slice_t slice_2, int c);
 
 image_t imread(char *path)
 {
@@ -68,7 +69,7 @@ slice_t slice_image(image_t image, int start_row, int start_col, int end_row, in
 
 slice_t slice_slice(slice_t sin, int start_row, int start_col, int end_row, int end_col)
 {
-    pixel_t * startptr;
+    pixel_t *startptr;
     slice_t slice;
 
     startptr = sin.data + start_row * sin.jumpsize + sin.channels * start_col;
@@ -83,6 +84,7 @@ slice_t slice_slice(slice_t sin, int start_row, int start_col, int end_row, int 
 int main()
 {
     image_t in_image = imread("image.jpg");
+    
     printf("Image width: %d\n", in_image.width);
     printf("Image height: %d\n", in_image.height);
     printf("Number of channels: %d\n", in_image.channels);
@@ -92,23 +94,67 @@ int main()
     printf("%d\n", n);
     unsigned char *out_image = malloc(sizeof(unsigned char) * n);
     assert(out_image);
-    for (int row = 0; row < slice.height; row++) {
-        for (int col = 0; col < slice.width*slice.channels; col++) {
-            out_image[row*(slice.width*slice.channels) + col] = (unsigned char) slice.data[row * slice.jumpsize + col];
+    for (int row = 0; row < slice.height; row++)
+    {
+        for (int col = 0; col < slice.width * slice.channels; col++)
+        {
+            out_image[row * (slice.width * slice.channels) + col] = (unsigned char)slice.data[row * slice.jumpsize + col];
         }
     }
-    stbi_write_png("out1.jpg", slice.width, slice.height, slice.channels, out_image, slice.channels*slice.width);
+    stbi_write_png("out1.jpg", slice.width, slice.height, slice.channels, out_image, slice.channels * slice.width);
+
+    // test l2norm
     printf("%f\n", l2norm(slice, slice));
     pixel_t arr1[] = {1.0, 1.0, 1.0, 1.0};
     pixel_t arr2[] = {0.0, 0.0, 0.0, 0.0};
     slice_t s1 = {arr1, 2, 2, 1, 2};
     slice_t s2 = {arr2, 2, 2, 1, 2};
-    printf("%f\n", l2norm(s1, s2));
+    printf("%f\n\n", l2norm(s1, s2));
 
+    // test errors
+    pixel_t matrix1[27] = {0.0};
+    pixel_t matrix2[27] = {1.0};
+    for (int i = 0; i < 27; i++)
+    {
+        matrix2[i] = 2.0;
+    }
+    slice_t slice1 = {matrix1, 3, 3, 3, 9};
+    slice_t slice2 = {matrix2, 3, 3, 3, 9};
+    for (int i = 0; i < slice1.height; i++)
+    {
+        for (int j = 0; j < slice1.width; j++)
+        {
+            printf("%f ", slice1.data[i * slice1.jumpsize + j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+    for (int i = 0; i < slice1.height; i++)
+    {
+        for (int j = 0; j < slice1.width; j++)
+        {
+            printf("%f ", slice2.data[i * slice1.jumpsize + j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+    pixel_t *errors = dpcut(slice1, slice2, 0);
+    for (int i = 0; i < slice1.height; i++)
+    {
+        for (int j = 0; j < slice1.width; j++)
+        {
+            printf("%f ", errors[i * slice1.width + j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
+    free(errors);
+    
+    // print input image
     imwrite(in_image, "out.png");
     imfree(in_image);
 
     return 0;
 }
 
-// gcc test.c -o test -lm
+// gcc test.c L2norm.c dpctu.c -o test -lm
