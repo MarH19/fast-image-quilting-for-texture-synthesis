@@ -106,13 +106,13 @@ a fixed output block
 */
 void calc_errors(image_t in, int blocksize, slice_t in_slice, slice_t out_slice, pixel_t *errors, int add)
 {
-    int error_jumpsize = in.width - blocksize;
+    int error_jumpsize = in.width - blocksize + 1;
 
     if (add)
     {
-        for (int i = 0; i < in.height - blocksize; i++)
+        for (int i = 0; i < in.height - blocksize + 1; i++)
         {
-            for (int j = 0; j < in.width - blocksize; j++)
+            for (int j = 0; j < in.width - blocksize + 1; j++)
             {
 
                 in_slice.data = in.data + in_slice.jumpsize * i + j * in_slice.channels;
@@ -122,9 +122,9 @@ void calc_errors(image_t in, int blocksize, slice_t in_slice, slice_t out_slice,
     }
     else
     {
-        for (int i = 0; i < in.height - blocksize; i++)
+        for (int i = 0; i < in.height - blocksize + 1; i++)
         {
-            for (int j = 0; j < in.width - blocksize; j++)
+            for (int j = 0; j < in.width - blocksize + 1; j++)
             {
 
                 in_slice.data = in.data + in_slice.jumpsize * i + j * in_slice.channels;
@@ -133,13 +133,6 @@ void calc_errors(image_t in, int blocksize, slice_t in_slice, slice_t out_slice,
         }
     }
 }
-
-// Coordinates of a candidate block
-typedef struct
-{
-    int row;
-    int col;
-} coord;
 
 /*
 The function find finds the coordinates of a candidate block that is within a certain range (specified by tolerance)
@@ -176,7 +169,7 @@ coord find(pixel_t *errors, int height, int width, pixel_t tolerance)
     }
 
     // Create the array with candidates and populate it with
-    coord *candidates = (coord *)malloc(nr_candidates * sizeof(coord));
+    coord candidates[nr_candidates];
     int idx = 0;
     for (int i = 0; i < height; i++)
     {
@@ -195,8 +188,6 @@ coord find(pixel_t *errors, int height, int width, pixel_t tolerance)
     // Choose randomly a candidate
     int random_idx = rand() % nr_candidates;
     coord random_candidate = candidates[random_idx];
-    free(candidates);
-    candidates = NULL;
 
     // return coordinates of the random candidate
     return random_candidate;
@@ -218,27 +209,27 @@ int main()
     // printf("Height: %d\n", in.height);
     // printf("Width: %d\n", in.width);
 
-    int out_size = num_blocks * (blocksize - overlap - 1);
+    int out_size = num_blocks * blocksize - (num_blocks - 1) * overlap;
     int n = out_size * out_size * 3;
     double *out_image = (double *)calloc(n, sizeof(double));
     assert(out_image);
     image_t out = {out_image, out_size, out_size, 3};
-    int errorlen = (in.height - blocksize) * (in.width - blocksize) * sizeof(pixel_t);
+    int errorlen = (in.height - blocksize + 1) * (in.width - blocksize + 1) * sizeof(pixel_t);
     pixel_t *errors = (pixel_t *)malloc(errorlen);
 
-    for (int i = 0; i < num_blocks - 1; i++)
+    for (int row = 0; row < num_blocks; row++)
     {
-        for (int j = 0; j < num_blocks - 1; j++)
+        for (int col = 0; col < num_blocks; col++)
         {
-            int si = i * blocksize - i * overlap;
-            int sj = j * blocksize - j * overlap;
+            int si = row * (blocksize - overlap);
+            int sj = col * (blocksize - overlap);
             memset(errors, 0, errorlen);
 
             // Very first case, so pick one at random
-            if (i == 0 && j == 0)
+            if (row == 0 && col == 0)
             {
-                int row_idx = rand() % (in.height - blocksize);
-                int col_idx = rand() % (in.width - blocksize);
+                int row_idx = rand() % (in.height - blocksize + 1);
+                int col_idx = rand() % (in.width - blocksize + 1);
 
                 slice_t out_block = slice_image(out, si, sj, si + blocksize, sj + blocksize);
                 slice_t in_block = slice_image(in, row_idx, col_idx, row_idx + blocksize, col_idx + blocksize);
@@ -246,41 +237,27 @@ int main()
                 slice_cpy(in_block, out_block);
                 continue;
             }
-            // Top row, so only check left edges
-            else if (i == 0)
+            if (row != 0) // safe to check top
             {
-
-                slice_t out_slice = slice_image(out, si, sj, si + blocksize, sj + overlap);
-                slice_t in_slice = slice_image(in, 0, 0, blocksize, overlap);
-                calc_errors(in, blocksize, in_slice, out_slice, errors, 1);
-            }
-            // Left col, so only check above
-            else if (j == 0)
-            {
-
                 slice_t out_slice = slice_image(out, si, sj, si + overlap, sj + blocksize);
                 slice_t in_slice = slice_image(in, 0, 0, overlap, blocksize);
                 calc_errors(in, blocksize, in_slice, out_slice, errors, 1);
             }
-            // Typical case, check above and left
-            else
+            if (col != 0) // safe to check left
             {
                 slice_t out_slice = slice_image(out, si, sj, si + blocksize, sj + overlap);
                 slice_t in_slice = slice_image(in, 0, 0, blocksize, overlap);
                 calc_errors(in, blocksize, in_slice, out_slice, errors, 1);
-
-                out_slice = slice_image(out, si, sj, si + overlap, sj + blocksize);
-                in_slice = slice_image(in, 0, 0, overlap, blocksize);
-                calc_errors(in, blocksize, in_slice, out_slice, errors, 1);
-
-                // Remove the overlapping region in above and left cases
-                out_slice = slice_image(out, si, sj, si + overlap, sj + overlap);
-                in_slice = slice_image(in, 0, 0, overlap, overlap);
+            }
+            if (col != 0 && row != 0) // overlap so remove common
+            {
+                slice_t out_slice = slice_image(out, si, sj, si + overlap, sj + overlap);
+                slice_t in_slice = slice_image(in, 0, 0, overlap, overlap);
                 calc_errors(in, blocksize, in_slice, out_slice, errors, 0);
             }
 
             // Search for a random candidate block among the best matching blocks (determined by the tolerance)
-            coord random_candidate = find(errors, in.height - blocksize, in.width - blocksize, tolerance);
+            coord random_candidate = find(errors, in.height - blocksize + 1, in.width - blocksize + 1, tolerance);
             int rand_row = random_candidate.row;
             int rand_col = random_candidate.col;
 
