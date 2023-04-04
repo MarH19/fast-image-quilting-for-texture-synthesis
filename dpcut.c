@@ -3,11 +3,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// slice_1 and slice_2 of same size are merged, c = 0 for vertical case, c = 1 for horizontal case
+
 void calcErrors(slice_t slice_1, slice_t slice_2, pixel_t *errors);
 pixel_t *transpose(pixel_t *mat, int width, int height);
 
-// c determines if we want a vertical (c = 0) or horizontal cut (c = 1)
+// slice_1 and slice_2 of same size are merged into out, c = 0 for vertical case, c = 1 for horizontal case
 void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int c)
 {
 
