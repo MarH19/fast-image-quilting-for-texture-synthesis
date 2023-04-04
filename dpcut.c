@@ -143,7 +143,7 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int c)
                 start--;
             }
         }
-        printf("%d\n", start);
+        //printf("%d\n", start);
         // fill the row of the output
         if (c == 1){
             for (int j = 0; j < out.height; j++)
