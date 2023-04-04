@@ -5,23 +5,35 @@
 
 // slice_1 and slice_2 of same size are merged, c = 0 for vertical case, c = 1 for horizontal case
 void calcErrors(slice_t slice_1, slice_t slice_2, pixel_t *errors);
+pixel_t *transpose(pixel_t *mat, int width, int height);
 
-// this implementation currently only works for vertical overlapping blocks
+// c determines if we want a vertical (c = 0) or horizontal cut (c = 1)
 void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int c)
 {
+
+    int width;
+    int height;
+
+    if (c == 1)
+    {
+        width = slice_1.height;
+        height = slice_1.width;
+    }
+    else
+    {
+        width = slice_1.width;
+        height = slice_1.height;
+    }
+
     // initialize errors array
-    // does /3 work
-    int width = slice_1.width;
-    int height = slice_1.height;
     pixel_t *errors = malloc(sizeof(pixel_t) * width * height);
 
     calcErrors(slice_1, slice_2, errors);
 
     if (c == 1)
     {
-        // transpose errors
-
-        // probably best/easier to just code two cases
+        // transpose errors (now in row format)
+        errors = transpose(errors, slice_1.width, slice_1.height);
     }
 
     // initialize dp array
@@ -62,10 +74,8 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int c)
             dp[i * width + j] = errors[i * width + j] + min_path;
         }
     }
-    //return errors;
-    //return dp;
-    // do backtracking while filling out
-    // aliasing shouldn't be a problem but i need to write update the out slice/image
+
+    //  do backtracking while filling out slice
 
     // find the min element in the last row of the dp table
     int start;
@@ -80,12 +90,22 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int c)
             min = temp_min;
         }
     }
-    // set last row of out image
-    for (int i = 0; i < slice_1.width * 3; i++)
-    {
-        out.data[(out.height - 1) * out.jumpsize + i] = i/3 < start ? slice_1.data[(height - 1) * slice_1.jumpsize + i] : slice_2.data[(slice_2.height - 1) * slice_2.jumpsize + i];
-    }
 
+    // set last row of out image
+    if (c == 1){
+        for (int i = 0; i < out.height; i++)
+        {
+            for (int k = 0; k < out.channels; k++)
+            {
+                out.data[i * out.jumpsize + (out.width - 1) * 3 + k] = i < start ? slice_1.data[i * slice_1.jumpsize + (slice_1.width - 1) * 3 + k] : slice_2.data[(i * slice_2.jumpsize + slice_2.width - 1) * 3 + k];
+            }
+        }
+    } else {
+        for (int i = 0; i < slice_1.width * 3; i++)
+        {
+            out.data[(out.height - 1) * out.jumpsize + i] = i / 3 < start ? slice_1.data[(height - 1) * slice_1.jumpsize + i] : slice_2.data[(slice_2.height - 1) * slice_2.jumpsize + i];
+        }
+    }
 
     // for all rows above do
     // find new start
@@ -125,16 +145,25 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int c)
         }
         printf("%d\n", start);
         // fill the row of the output
-        for (int j = 0; j < out.width * 3; j++)
-        {
-            out.data[i * out.jumpsize + j] = j/3 < start ? slice_1.data[i * slice_1.jumpsize + j] : slice_2.data[i * slice_2.jumpsize + j];
+        if (c == 1){
+            for (int j = 0; j < out.height; j++)
+            {
+                for (int k = 0; k < out.channels; k++)
+                {
+                    out.data[j * out.jumpsize + i * 3 + k] = j < start ? slice_1.data[j * slice_1.jumpsize + i * 3 + k] : slice_2.data[j * slice_2.jumpsize + i * 3 + k];
+                }
+            }
+        } else {
+            for (int j = 0; j < out.width * 3; j++)
+            {
+                out.data[i * out.jumpsize + j] = j / 3 < start ? slice_1.data[i * slice_1.jumpsize + j] : slice_2.data[i * slice_2.jumpsize + j];
+            }
         }
     }
     // free errors
     free(errors);
     // free dp
     free(dp);
-
 }
 
 // errors(i,j) = sum of squared differences of the 3 rgb values
@@ -147,7 +176,23 @@ void calcErrors(slice_t slice_1, slice_t slice_2, pixel_t *errors)
         {
             // ssd for one pixel
             pixel_t error = (pow(slice_1.data[i * slice_1.jumpsize + j] - slice_2.data[i * slice_2.jumpsize + j], 2)) + (pow(slice_1.data[i * slice_1.jumpsize + j + 1] - slice_2.data[i * slice_2.jumpsize + j + 1], 2)) + (pow(slice_1.data[i * slice_1.jumpsize + j + 2] - slice_2.data[i * slice_2.jumpsize + j + 2], 2));
-            errors[i * slice_1.width + j/3] = error;
+            errors[i * slice_1.width + j / 3] = error;
         }
     }
+}
+
+// transpose a matrix
+pixel_t *transpose(pixel_t *mat, int width, int height)
+{
+    pixel_t *mat_t = malloc(sizeof(pixel_t) * width * height);
+    for (int i = 0; i < height; i++)
+    {
+        for (int j = 0; j < width; j++)
+        {
+            mat_t[j * height + i] = mat[i * width + j];
+        }
+    }
+    free(mat);
+    mat = NULL;
+    return mat_t;
 }

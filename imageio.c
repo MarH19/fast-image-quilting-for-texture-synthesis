@@ -7,6 +7,7 @@
 
 extern double l2norm(slice_t inp_slice, slice_t out_slice);
 extern void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int c);
+extern pixel_t* transpose(pixel_t *mat, int width, int height);
 
 image_t imread(char *path)
 {
@@ -144,7 +145,7 @@ int main()
     // slice_t s2 = {arr2, 2, 2, 1, 2};
     // printf("%f\n\n", l2norm(s1, s2));
 
-    // // test dpcut
+    // test dpcut
     // pixel_t matrix1[72] = {0.0};
     // pixel_t matrix2[72] = {1.0};
     // pixel_t out[72] = {0.0};
@@ -165,10 +166,14 @@ int main()
     //             else if (j == 2)
     //             {
     //                 matrix1[i * 4 * 3 + j*3 + k] = 0.8;
+    //             } else
+    //             {
+    //                 matrix1[i * 4 * 3 + j*3 + k] = 1.0;
     //             }
     //         }
     //     }
     // }
+    
     // slice_t slice1 = {matrix1, 4, 6, 3, 12};
     // slice_t slice2 = {matrix2, 4, 6, 3, 12};
     // slice_t slice_out = {out, 4, 6, 3, 12};
@@ -181,6 +186,7 @@ int main()
     //     printf("\n");
     // }
     // printf("\n");
+
     // for (int i = 0; i < slice2.height; i++)
     // {
     //     for (int j = 0; j < slice2.width * 3; j += 3)
@@ -190,7 +196,6 @@ int main()
     //     printf("\n");
     // }
     // printf("\n");
-    
     // // for printing out array
     // dpcut(slice1, slice2, slice_out, 0);
     // for (int i = 0; i < slice_out.height; i++)
