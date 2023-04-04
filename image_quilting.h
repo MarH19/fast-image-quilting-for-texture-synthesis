@@ -16,3 +16,8 @@ typedef struct{
     int channels;
     int jumpsize;
 } slice_t;
+
+typedef struct{
+    int row;
+    int col;
+} coord;

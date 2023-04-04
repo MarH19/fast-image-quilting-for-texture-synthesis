@@ -1,3 +1,6 @@
+# out folder where we can put our images
+out/
+
 # Prerequisites
 *.d
 
