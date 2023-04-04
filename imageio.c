@@ -5,6 +5,10 @@
 #include "stb_image.h"
 #include "stb_image_write.h"
 
+// ======================================================================================================== Start Piero
+#include <time.h>
+// ======================================================================================================== End Piero
+
 extern double l2norm(slice_t inp_slice, slice_t out_slice);
 
 image_t imread(char *path)
@@ -80,8 +84,222 @@ slice_t slice_slice(slice_t sin, int start_row, int start_col, int end_row, int 
     return slice;
 }
 
+
+
+
+// ======================================================================================================== Start Piero
+
+
+
+/*
+Copy block of input image to block of output image
+*/
+void cpy_block(slice_t in_block, slice_t out_block){
+
+    for (int i = 0; i < out_block.height; i++){
+        for (int j = 0; j < out_block.channels * out_block.width; j++){
+
+            out_block.data[i * out_block.jumpsize + j] = in_block.data[i * in_block.jumpsize + j];
+
+        }
+    }
+}
+
+/* 
+Calculates the error between the slice of an input block (i.e., for each block of the input image) and the slice of
+a fixed output block
+*/
+void calc_errors(image_t in, int bsize, slice_t in_slice, slice_t out_slice, pixel_t *errors, int add){
+
+    int error_jumpsize = in.width - bsize;
+
+    if(add){
+        for (int i = 0; i < in.height - bsize; i++) {
+            for (int j = 0; j < in.width - bsize; j++) {
+                
+                in_slice.data = in.data + in_slice.jumpsize*i + j*in_slice.channels;
+                errors[i*error_jumpsize + j] += l2norm(in_slice, out_slice); // if add > 0, the operation is plus (+)
+
+
+            }
+        }
+    }
+    else{
+        for (int i = 0; i < in.height - bsize; i++) {
+            for (int j = 0; j < in.width - bsize; j++) {
+            
+                in_slice.data = in.data + in_slice.jumpsize*i + j*in_slice.channels;
+                errors[i*error_jumpsize + j] -= l2norm(in_slice, out_slice); // if add == 0, the operation is minus (-)
+
+            }
+        }
+    }
+}
+
+// Coordinates of a candidate block
+typedef struct{
+    int row;
+    int col;
+} coord;
+
+/* 
+The function find finds the coordinates of a candidate block that is within a certain range (specified by tolerance)
+from the best fitting block
+ */
+coord find(pixel_t *errors, int height, int width, pixel_t tolerance){
+
+    pixel_t min_error = INFINITY;
+
+    // search for the minimum error in the errors array and store it in a variable.
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+
+            if(errors[i*width + j] < min_error){
+                min_error = errors[i*width + j];
+            }
+        }
+    }
+
+    // Count how many canditates exist in order to know the size of the array of candidates
+    pixel_t tol_range = (1.0 + tolerance) * min_error;
+    int nr_candidates = 0;
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+
+            if(errors[i*width + j] <= tol_range){
+                nr_candidates++;
+            }
+        }
+    }
+
+    // Create the array with candidates and populate it with
+    coord * candidates = (coord*)malloc(nr_candidates * sizeof(coord));
+    int idx = 0;
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+
+            if(errors[i*width + j] <= tol_range){
+                coord candid = {i,j};
+                candidates[idx] = candid;
+                idx++;
+            }
+        }
+    }
+
+    // Choose randomly a candidate
+    srand(time(0));
+    int random_idx = rand() % nr_candidates;
+    coord random_candidate = candidates[random_idx];
+    free(candidates);
+    candidates = NULL;
+
+    // return coordinates of the random candidate
+    return random_candidate;
+}
+
+
+
+// Command to compile the code:   gcc imageio.c L2norm.c  -o imageio -lm
 int main()
-{
+{   
+
+    //floor
+    int bsize = 35;
+    int num_blocks_out = 10;
+    int ovsize = floor(bsize/6);
+    pixel_t tolerance = 0.3;
+
+    //Open image
+    image_t in = imread("floor.jpg");
+
+    //printf("Height: %d\n", in.height);
+    //printf("Width: %d\n", in.width);
+
+    int out_size = num_blocks_out * (bsize - ovsize - 1);
+    int n = out_size * out_size * 3;
+    double *out_image = (double *)calloc(n, sizeof(double));
+    assert(out_image);
+    image_t out = {out_image, out_size, out_size, 3};
+
+
+    for (int i = 0; i < num_blocks_out - 1; i++) { 
+        for (int j = 0; j < num_blocks_out - 1; j++) { 
+            
+            int si = i*bsize - i*ovsize;
+            int sj = j*bsize - j*ovsize;
+
+
+            pixel_t *errors = (pixel_t *)calloc((out.height-bsize)*(out.width-bsize), sizeof(pixel_t));
+
+            // Very first case, so pick one at random
+            if(i == 0 && j == 0){
+                srand(time(0));
+                int row_idx = rand() % (in.height - bsize);
+                int col_idx = rand() % (in.width - bsize);
+
+                slice_t out_block = slice_image(out, si, sj, si+bsize, sj+bsize);
+                slice_t in_block = slice_image(in, row_idx, col_idx, row_idx+bsize, col_idx+bsize);
+
+                cpy_block(in_block, out_block);
+                free(errors);
+                errors = NULL;
+                continue;
+            }
+            // Top row, so only check left edges
+            else if(i == 0){
+
+                slice_t out_slice = slice_image(out, si, sj, si+bsize, sj+ovsize);
+                slice_t in_slice = slice_image(in, 0, 0, bsize, ovsize);
+                calc_errors(in, bsize, in_slice, out_slice, errors, 1);
+            }
+            // Left col, so only check above
+            else if(j == 0){
+                
+                slice_t out_slice = slice_image(out, si, sj, si+ovsize, sj+bsize);
+                slice_t in_slice = slice_image(in, 0, 0, ovsize, bsize);
+                calc_errors(in, bsize, in_slice, out_slice, errors, 1);
+
+            }
+            // Typical case, check above and left
+            else{
+                slice_t out_slice = slice_image(out, si, sj, si+bsize, sj+ovsize);
+                slice_t in_slice = slice_image(in, 0, 0, bsize, ovsize);
+                calc_errors(in, bsize, in_slice, out_slice, errors, 1);
+
+                out_slice = slice_image(out, si, sj, si+ovsize, sj+bsize);
+                in_slice = slice_image(in, 0, 0, ovsize, bsize);
+                calc_errors(in, bsize, in_slice, out_slice, errors, 1);
+
+                // Remove the overlapping region in above and left cases
+                out_slice = slice_image(out, si, sj, si+ovsize, sj+ovsize);
+                in_slice = slice_image(in, 0, 0, ovsize, ovsize);
+                calc_errors(in, bsize, in_slice, out_slice, errors, 0);
+
+            }
+
+            // Search for a random candidate block among the best matching blocks (determined by the tolerance)
+            coord random_candidate = find(errors, in.height-bsize, in.width-bsize, tolerance);
+            int rand_row = random_candidate.row;
+            int rand_col = random_candidate.col;
+
+            slice_t out_block = slice_image(out, si, sj, si+bsize, sj+bsize);
+            slice_t in_block = slice_image(in, rand_row, rand_col, rand_row+bsize, rand_col+bsize);
+            cpy_block(in_block, out_block);
+            free(errors);
+            errors = NULL;
+
+        }
+    }
+
+    // Save the NO CUT version
+    imwrite(out, "out.jpg");
+
+    return 0;
+
+// ======================================================================================================== End Piero
+
+
+    /*
     image_t in_image = imread("image.jpg");
     printf("Image width: %d\n", in_image.width);
     printf("Image height: %d\n", in_image.height);
@@ -107,8 +325,9 @@ int main()
 
     imwrite(in_image, "out.png");
     imfree(in_image);
-
+    
     return 0;
+    */
 }
 
 // gcc test.c -o test -lm
