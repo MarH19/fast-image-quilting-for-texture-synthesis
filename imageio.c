@@ -269,7 +269,7 @@ int main()
 
     free(errors);
     // Save the NO CUT version
-    imwrite(out, "out.jpg");
+    imwrite(out, "out/out.jpg");
 
     return 0;
     // ======================================================================================================== End Piero
