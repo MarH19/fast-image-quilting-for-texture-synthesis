@@ -223,16 +223,16 @@ int main()
     double *out_image = (double *)calloc(n, sizeof(double));
     assert(out_image);
     image_t out = {out_image, out_size, out_size, 3};
+    int errorlen = (in.height - blocksize) * (in.width - blocksize) * sizeof(pixel_t);
+    pixel_t *errors = (pixel_t *)malloc(errorlen);
 
     for (int i = 0; i < num_blocks - 1; i++)
     {
         for (int j = 0; j < num_blocks - 1; j++)
         {
-
             int si = i * blocksize - i * overlap;
             int sj = j * blocksize - j * overlap;
-
-            pixel_t *errors = (pixel_t *)calloc((out.height - blocksize) * (out.width - blocksize), sizeof(pixel_t));
+            memset(errors, 0, errorlen);
 
             // Very first case, so pick one at random
             if (i == 0 && j == 0)
@@ -244,8 +244,6 @@ int main()
                 slice_t in_block = slice_image(in, row_idx, col_idx, row_idx + blocksize, col_idx + blocksize);
 
                 slice_cpy(in_block, out_block);
-                free(errors);
-                errors = NULL;
                 continue;
             }
             // Top row, so only check left edges
@@ -289,11 +287,10 @@ int main()
             slice_t out_block = slice_image(out, si, sj, si + blocksize, sj + blocksize);
             slice_t in_block = slice_image(in, rand_row, rand_col, rand_row + blocksize, rand_col + blocksize);
             slice_cpy(in_block, out_block);
-            free(errors);
-            errors = NULL;
         }
     }
 
+    free(errors);
     // Save the NO CUT version
     imwrite(out, "out.jpg");
 
