@@ -11,7 +11,7 @@
 
 extern double l2norm(slice_t inp_slice, slice_t out_slice);
 extern void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int c);
-extern pixel_t* transpose(pixel_t *mat, int width, int height);
+extern pixel_t *transpose(pixel_t *mat, int width, int height);
 
 image_t imread(char *path)
 {
@@ -195,7 +195,7 @@ coord find(pixel_t *errors, int height, int width, pixel_t tolerance)
     return random_candidate;
 }
 
-// Command to compile the code:   gcc imageio.c L2norm.c  -o imageio -lm
+// Command to compile the code:   gcc dpcut.c imageio.c L2norm.c  -o imageio -lm
 int main()
 {
 
@@ -265,7 +265,19 @@ int main()
 
             slice_t out_block = slice_image(out, si, sj, si + blocksize, sj + blocksize);
             slice_t in_block = slice_image(in, rand_row, rand_col, rand_row + blocksize, rand_col + blocksize);
-            slice_cpy(in_block, out_block);
+            // slice_cpy(in_block, out_block);
+
+            if (row != 0)
+            {
+
+                dpcut(out_block, in_block, out_block, 1);
+            }
+
+            if (col != 0)
+            {
+
+                dpcut(out_block, in_block, out_block, 0);
+            }
         }
     }
 
@@ -276,6 +288,4 @@ int main()
     return 0;
     // ======================================================================================================== End Piero
 }
-
-// gcc imageio.c L2norm.c dpcut.c -o test -lm
-
+// gcc dpcut.c imageio.c L2norm.c  -o imageio -lm
