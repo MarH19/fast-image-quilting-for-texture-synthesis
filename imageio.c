@@ -10,6 +10,8 @@
 // ======================================================================================================== End Piero
 
 extern double l2norm(slice_t inp_slice, slice_t out_slice);
+extern void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int c);
+extern pixel_t* transpose(pixel_t *mat, int width, int height);
 
 image_t imread(char *path)
 {
@@ -275,4 +277,5 @@ int main()
     // ======================================================================================================== End Piero
 }
 
-// gcc test.c -o test -lm
+// gcc imageio.c L2norm.c dpcut.c -o test -lm
+
