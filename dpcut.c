@@ -8,6 +8,9 @@ void calcErrors(slice_t slice_1, slice_t slice_2, pixel_t *errors);
 pixel_t *transpose(pixel_t *mat, int width, int height);
 
 // slice_1 and slice_2 of same size are merged into out, c = 0 for vertical case, c = 1 for horizontal case
+// flop count: flops(transpose) + flops(calcerrors) + (s_width * s_height) * (3 * min + add) + s_width * (min + LT) + (s_height - 1) * (3 * min + 2 * EQ)
+// this is approximately: 0 + (s_height * s_width) * 3 * 2 + (s_width * s_height) * (3 + 1) + s_width * 2 + (s_height-1) * (3 + 2) 
+// = (s_height * s_width) * 10 + s_width * 2 + (s_height -1) * 5 flops  
 void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int c)
 {
 
@@ -167,6 +170,7 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int c)
 }
 
 // errors(i,j) = sum of squared differences of the 3 rgb values
+// flop count: (s_height * s_width) * 3 * (pow + add)
 void calcErrors(slice_t slice_1, slice_t slice_2, pixel_t *errors)
 {
 
@@ -182,6 +186,7 @@ void calcErrors(slice_t slice_1, slice_t slice_2, pixel_t *errors)
 }
 
 // transpose a matrix
+// flop count: 0
 pixel_t *transpose(pixel_t *mat, int width, int height)
 {
     pixel_t *mat_t = malloc(sizeof(pixel_t) * width * height);
