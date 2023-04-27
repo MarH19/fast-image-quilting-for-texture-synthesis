@@ -1,6 +1,7 @@
 #include "image_quilting.h"
 #include <math.h>
 #include <assert.h>
+#include <stdio.h>
 
 double l2norm(slice_t s1, slice_t s2)
 {
@@ -15,9 +16,10 @@ double l2norm(slice_t s1, slice_t s2)
         {
             double s1_data = s1.data[i * s1.jumpsize + j];
             double s2_data = s2.data[i * s2.jumpsize + j];
-
+            
             error += pow(s1_data - s2_data, 2);
         }
     }
+    
     return sqrt(error);
 }

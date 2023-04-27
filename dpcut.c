@@ -48,7 +48,7 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int c)
     }
 
     // watch out this changes when transpose
-    pixel_t max_val = pow(255, 2) * 3 * height + 1;
+    pixel_t max_val = INFINITY;
 
     // fill dp table
     for (int i = 1; i < height; i++)
@@ -101,6 +101,9 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int c)
             for (int k = 0; k < out.channels; k++)
             {
                 out.data[i * out.jumpsize + (out.width - 1) * 3 + k] = i < start ? slice_1.data[i * slice_1.jumpsize + (slice_1.width - 1) * 3 + k] : slice_2.data[(i * slice_2.jumpsize + slice_2.width - 1) * 3 + k];
+                // if(i == start){
+                //     out.data[i * out.jumpsize + (out.width - 1) * 3 + k] = 255;
+                // }
             }
         }
     }
@@ -109,6 +112,10 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int c)
         for (int i = 0; i < slice_1.width * 3; i++)
         {
             out.data[(out.height - 1) * out.jumpsize + i] = i / 3 < start ? slice_1.data[(height - 1) * slice_1.jumpsize + i] : slice_2.data[(slice_2.height - 1) * slice_2.jumpsize + i];
+            // if(i/3 == start)
+            // {
+            //     out.data[(out.height - 1) * out.jumpsize + i] = 255;
+            // }
         }
     }
 
@@ -157,6 +164,9 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int c)
                 for (int k = 0; k < out.channels; k++)
                 {
                     out.data[j * out.jumpsize + i * 3 + k] = j < start ? slice_1.data[j * slice_1.jumpsize + i * 3 + k] : slice_2.data[j * slice_2.jumpsize + i * 3 + k];
+                    // if(j == start){
+                    //     out.data[j * out.jumpsize + i * 3 + k] = 255;
+                    // }
                 }
             }
         }
@@ -164,7 +174,11 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int c)
         {
             for (int j = 0; j < out.width * 3; j++)
             {
-                out.data[i * out.jumpsize + j] = j / 3 < start ? slice_1.data[i * slice_1.jumpsize + j] : slice_2.data[i * slice_2.jumpsize + j];
+                out.data[i * out.jumpsize + j] = (j / 3) < start ? slice_1.data[i * slice_1.jumpsize + j] : slice_2.data[i * slice_2.jumpsize + j];
+                //printf("%d\n", j);
+                // if(j/3 == start){
+                //     out.data[i * out.jumpsize + j] = 255;
+                // }
             }
         }
     }
@@ -186,6 +200,7 @@ void calcErrors(slice_t slice_1, slice_t slice_2, pixel_t *errors)
             // ssd for one pixel
             pixel_t error = (pow(slice_1.data[i * slice_1.jumpsize + j] - slice_2.data[i * slice_2.jumpsize + j], 2)) + (pow(slice_1.data[i * slice_1.jumpsize + j + 1] - slice_2.data[i * slice_2.jumpsize + j + 1], 2)) + (pow(slice_1.data[i * slice_1.jumpsize + j + 2] - slice_2.data[i * slice_2.jumpsize + j + 2], 2));
             errors[i * slice_1.width + j / 3] = error;
+            printf("%lf\n", error);
         }
     }
 }
