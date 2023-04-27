@@ -1,5 +1,5 @@
-# out folder where we can put our images
-out/
+# don't include out images in .git they bloat git graph
+out.*
 
 # Prerequisites
 *.d
@@ -56,6 +56,7 @@ dkms.conf
 image.jpg
 test
 .vscode/settings.json
+.vscode/c_cpp_properties.json
 
 # for mac users
 .DS_Store
