@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 void calcErrors(slice_t slice_1, slice_t slice_2, pixel_t *errors);
 pixel_t *transpose(pixel_t *mat, int width, int height);
 
@@ -92,7 +91,8 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int c)
     }
 
     // set last row of out image
-    if (c == 1){
+    if (c == 1)
+    {
         for (int i = 0; i < out.height; i++)
         {
             for (int k = 0; k < out.channels; k++)
@@ -100,7 +100,9 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int c)
                 out.data[i * out.jumpsize + (out.width - 1) * 3 + k] = i < start ? slice_1.data[i * slice_1.jumpsize + (slice_1.width - 1) * 3 + k] : slice_2.data[(i * slice_2.jumpsize + slice_2.width - 1) * 3 + k];
             }
         }
-    } else {
+    }
+    else
+    {
         for (int i = 0; i < slice_1.width * 3; i++)
         {
             out.data[(out.height - 1) * out.jumpsize + i] = i / 3 < start ? slice_1.data[(height - 1) * slice_1.jumpsize + i] : slice_2.data[(slice_2.height - 1) * slice_2.jumpsize + i];
@@ -143,9 +145,10 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int c)
                 start--;
             }
         }
-        //printf("%d\n", start);
-        // fill the row of the output
-        if (c == 1){
+        // printf("%d\n", start);
+        //  fill the row of the output
+        if (c == 1)
+        {
             for (int j = 0; j < out.height; j++)
             {
                 for (int k = 0; k < out.channels; k++)
@@ -153,7 +156,9 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int c)
                     out.data[j * out.jumpsize + i * 3 + k] = j < start ? slice_1.data[j * slice_1.jumpsize + i * 3 + k] : slice_2.data[j * slice_2.jumpsize + i * 3 + k];
                 }
             }
-        } else {
+        }
+        else
+        {
             for (int j = 0; j < out.width * 3; j++)
             {
                 out.data[i * out.jumpsize + j] = j / 3 < start ? slice_1.data[i * slice_1.jumpsize + j] : slice_2.data[i * slice_2.jumpsize + j];

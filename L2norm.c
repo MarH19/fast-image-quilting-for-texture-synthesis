@@ -2,7 +2,6 @@
 #include <math.h>
 #include <assert.h>
 
-
 double l2norm(slice_t s1, slice_t s2)
 {
     double error = 0;
