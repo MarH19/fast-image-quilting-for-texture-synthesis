@@ -1,10 +1,11 @@
 #include "image_quilting.h"
-
+#include <stdio.h>
 int main()
-{
+{   
+    printf("test print");
     int blocksize = 35;
     int num_blocks = 10;
-    int overlap = blocksize / 6;
+    int overlap = 5;
     pixel_t tolerance = 0.3;
 
     image_t in = imread("floor.jpg");
