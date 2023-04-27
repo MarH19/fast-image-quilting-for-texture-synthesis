@@ -52,8 +52,10 @@ void calc_errors(image_t in, int blocksize, slice_t in_slice, slice_t out_slice,
 The function find finds the coordinates of a candidate block that is within a certain range (specified by tolerance)
 from the best fitting block
  */
+static int counter = 0;
 coord find(pixel_t *errors, int height, int width, pixel_t tolerance)
 {
+    
     pixel_t min_error = INFINITY;
 
     // search for the minimum error in the errors array and store it in a variable.
@@ -63,15 +65,17 @@ coord find(pixel_t *errors, int height, int width, pixel_t tolerance)
         {
             if (errors[i * width + j] < min_error)
             {
+                
                 min_error = errors[i * width + j];
             }
         }
     }
 
     // Count how many canditates exist in order to know the size of the array of candidates
-    printf("0 \n");
+    
     pixel_t tol_range = (1.0 + tolerance) * min_error;
     int nr_candidates = 0;
+    printf("toll: %f, height: %d, width: %d\n", tol_range, height, width);
     for (int i = 0; i < height; i++)
     {
         for (int j = 0; j < width; j++)
@@ -99,11 +103,12 @@ coord find(pixel_t *errors, int height, int width, pixel_t tolerance)
             }
         }
     }
-
     // Choose randomly a candidate
-    int random_idx = rand() % nr_candidates;
+    printf("cand: %d\n", nr_candidates);
+    int random_idx = 0; //rand() % nr_candidates;
+    printf("%d \n", counter++);
     coord random_candidate = candidates[random_idx];
-
+    
     // return coordinates of the random candidate
     return random_candidate;
 }
@@ -133,8 +138,8 @@ image_t image_quilting(image_t in, int blocksize, int num_blocks, int overlap, p
             // Very first case, so pick one at random
             if (row == 0 && col == 0)
             {
-                int row_idx = rand() % (in.height - blocksize + 1);
-                int col_idx = rand() % (in.width - blocksize + 1);
+                int row_idx = 0;// % (in.height - blocksize + 1);
+                int col_idx = 0;// % (in.width - blocksize + 1);
 
                 slice_t out_block = slice_image(out, si, sj, si + blocksize, sj + blocksize);
                 slice_t in_block = slice_image(in, row_idx, col_idx, row_idx + blocksize, col_idx + blocksize);

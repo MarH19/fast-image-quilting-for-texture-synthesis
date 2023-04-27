@@ -1,4 +1,5 @@
 #include "image_quilting.h"
+#include <stdio.h>
 
 int main()
 {
@@ -7,7 +8,8 @@ int main()
     int overlap = blocksize / 6;
     pixel_t tolerance = 0.3;
 
-    image_t in = imread("floor.jpg");
+    printf("num_blocks: %d\n", num_blocks);
+    image_t in = imread("image.jpg");
 
     image_t out = image_quilting(in, blocksize, num_blocks, overlap, tolerance);
 
