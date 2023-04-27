@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <stdio.h>
 #include "image_quilting.h"
 /* What do we need to do?
  *  1. load the image
@@ -68,6 +69,7 @@ coord find(pixel_t *errors, int height, int width, pixel_t tolerance)
     }
 
     // Count how many canditates exist in order to know the size of the array of candidates
+    printf("0 \n");
     pixel_t tol_range = (1.0 + tolerance) * min_error;
     int nr_candidates = 0;
     for (int i = 0; i < height; i++)
@@ -118,6 +120,7 @@ image_t image_quilting(image_t in, int blocksize, int num_blocks, int overlap, p
     int errorlen = (in.height - blocksize + 1) * (in.width - blocksize + 1) * sizeof(pixel_t);
     pixel_t *errors = (pixel_t *)malloc(errorlen);
     assert(errors);
+    
 
     for (int row = 0; row < num_blocks; row++)
     {
@@ -145,6 +148,7 @@ image_t image_quilting(image_t in, int blocksize, int num_blocks, int overlap, p
                 slice_t in_slice = slice_image(in, 0, 0, overlap, blocksize);
                 calc_errors(in, blocksize, in_slice, out_slice, errors, 1);
             }
+            
             if (col != 0) // safe to check left
             {
                 slice_t out_slice = slice_image(out, si, sj, si + blocksize, sj + overlap);
@@ -157,24 +161,33 @@ image_t image_quilting(image_t in, int blocksize, int num_blocks, int overlap, p
                 slice_t in_slice = slice_image(in, 0, 0, overlap, overlap);
                 calc_errors(in, blocksize, in_slice, out_slice, errors, 0);
             }
-
             // Search for a random candidate block among the best matching blocks (determined by the tolerance)
             coord random_candidate = find(errors, in.height - blocksize + 1, in.width - blocksize + 1, tolerance);
             int rand_row = random_candidate.row;
             int rand_col = random_candidate.col;
 
+            if (row > 1 && col >= 1){
+                exit(-1);
+            }
             slice_t out_block = slice_image(out, si, sj, si + blocksize, sj + blocksize);
             slice_t in_block = slice_image(in, rand_row, rand_col, rand_row + blocksize, rand_col + blocksize);
             // slice_cpy(in_block, out_block);
 
+            if (row > 1 && col >= 1){
+                exit(-1);
+            }
             if (row != 0)
                 dpcut(out_block, in_block, out_block, 1);
 
             if (col != 0)
                 dpcut(out_block, in_block, out_block, 0);
+            if (row > 1 && col >= 1){
+                exit(-1);
+            }
+            
         }
     }
-
+    
     free(errors);
 
     return out;
