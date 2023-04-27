@@ -56,5 +56,6 @@ dkms.conf
 image.jpg
 test
 .vscode/settings.json
-out.png
-out1.jpg
+
+# for mac users
+.DS_Store
