@@ -1,21 +1,23 @@
 #include "image_quilting.h"
 #include <math.h>
+#include <assert.h>
 
-double error;
-
-double l2norm(slice_t inp_slice, slice_t out_slice)
+double l2norm(slice_t s1, slice_t s2)
 {
-    for (int i = 0; i < inp_slice.height; i++)
+    double error = 0;
+    assert(s1.width == s2.width);
+    assert(s1.height == s2.height);
+    assert(s1.channels == s2.channels);
+
+    for (int i = 0; i < s1.height; i++)
     {
-        for (int j = 0; j < (inp_slice.channels * inp_slice.width); j++)
+        for (int j = 0; j < s1.channels * s1.width; j++)
         {
+            double s1_data = s1.data[i * s1.jumpsize + j];
+            double s2_data = s2.data[i * s2.jumpsize + j];
 
-            double inp_data = inp_slice.data[i * inp_slice.jumpsize + j];
-            double out_data = out_slice.data[i * inp_slice.jumpsize + j];
-
-            error += pow(inp_data - out_data, 2);
+            error += pow(s1_data - s2_data, 2);
         }
     }
-
     return sqrt(error);
 }
