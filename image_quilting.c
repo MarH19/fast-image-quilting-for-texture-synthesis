@@ -42,7 +42,7 @@ void calc_errors(image_t in, int blocksize, slice_t in_slice, slice_t out_slice,
             {
 
                 in_slice.data = in.data + in_slice.jumpsize * i + j * in_slice.channels;
-                
+
                 errors[i * error_jumpsize + j] -= l2norm(in_slice, out_slice); // if add == 0, the operation is minus (-)
             }
         }
@@ -71,7 +71,7 @@ coord find(pixel_t *errors, int height, int width, pixel_t tolerance)
             }
         }
     }
-    //printf("err: %lf\n", min_error);
+    // printf("err: %lf\n", min_error);
 
     // Count how many canditates exist in order to know the size of the array of candidates
 
@@ -116,10 +116,10 @@ coord find(pixel_t *errors, int height, int width, pixel_t tolerance)
 }
 
 // Command to compile the code:   gcc dpcut.c imageio.c L2norm.c  -o imageio -lm
-// (n_blocks)(n_blocks-1) * 2 * (flops(calcerrors) + flops(dpcut)) + (n_blocks-1)^2 * flops(calcerrors) + (n_blocks^2-1) * find 
-// = (n_blocks)(n_blocks-1) * 2 * ((in_height - blocksize + 1)(in_width - blocksize + 1) * (1 + overlap*blocksize*3*3 + 1) + (overlap * blocksize) * 10 + overlap * 2 + (blocksize -1) * 5) + (n_blocks-1)^2 * (overlap*overlap*3*3+1) + (n_blocks^2-1) * ((in_height - blocksize + 1)(in_width - blocksize + 1)*3 +2) 
+// (n_blocks)(n_blocks-1) * 2 * (flops(calcerrors) + flops(dpcut)) + (n_blocks-1)^2 * flops(calcerrors) + (n_blocks^2-1) * find
+// = (n_blocks)(n_blocks-1) * 2 * ((in_height - blocksize + 1)(in_width - blocksize + 1) * (1 + overlap*blocksize*3*3 + 1) + (overlap * blocksize) * 10 + overlap * 2 + (blocksize -1) * 5) + (n_blocks-1)^2 * (overlap*overlap*3*3+1) + (n_blocks^2-1) * ((in_height - blocksize + 1)(in_width - blocksize + 1)*3 +2)
 // nb = n_blocks, ih = in_height, iw = in_width, ov = overlap, bs = blocksize
-// = nb*(nb-1) * 2 * ((ih - bs + 1) * (iw -bs + 1) * (1 + ov * bs * 3 * 3 + 1) + (ov * bs) * 10 + ov * 2 + (bs -1) * 5) + (nb-1)^2 * (ov * ov * 3 * 3 + 1) + (nb * nb -1) * ((ih -bs + 1)(iw - bs + 1) * 3 + 2)
+// = nb*(nb-1) * 2 * ((ih - bs + 1) * (iw -bs + 1) * (1 + ov * bs * 3 * 3 + 1) + (ov * bs) * 10 + ov * 2 + (bs -1) * 5) + (nb-1)^2 * (ov * ov * 3 * 3 + 1) + (nb * nb -1) * ((ih -bs + 1)*(iw - bs + 1) * 3 + 2)
 
 image_t image_quilting(image_t in, int blocksize, int num_blocks, int overlap, pixel_t tolerance)
 {
@@ -137,7 +137,7 @@ image_t image_quilting(image_t in, int blocksize, int num_blocks, int overlap, p
     {
         for (int col = 0; col < num_blocks; col++)
         {
-            //printf("row: %d, col: %d\n", row, col);
+            // printf("row: %d, col: %d\n", row, col);
             int si = row * (blocksize - overlap);
             int sj = col * (blocksize - overlap);
             memset(errors, 0, errorlen);
@@ -145,8 +145,8 @@ image_t image_quilting(image_t in, int blocksize, int num_blocks, int overlap, p
             // Very first case, so pick one at random
             if (row == 0 && col == 0)
             {
-                int row_idx = 0; //rand() % (in.height - blocksize + 1);
-                int col_idx = 0; //rand() % (in.width - blocksize + 1);
+                int row_idx = 0; // rand() % (in.height - blocksize + 1);
+                int col_idx = 0; // rand() % (in.width - blocksize + 1);
 
                 slice_t out_block = slice_image(out, si, sj, si + blocksize, sj + blocksize);
                 slice_t in_block = slice_image(in, row_idx, col_idx, row_idx + blocksize, col_idx + blocksize);
@@ -177,24 +177,23 @@ image_t image_quilting(image_t in, int blocksize, int num_blocks, int overlap, p
             coord random_candidate = find(errors, in.height - blocksize + 1, in.width - blocksize + 1, tolerance);
             int rand_row = random_candidate.row;
             int rand_col = random_candidate.col;
-            
 
             if (row == 0)
             {
-                slice_t out_block = slice_image(out, si, sj+overlap, si + blocksize, sj + blocksize);
-                slice_t in_block = slice_image(in, rand_row, rand_col+overlap, rand_row + blocksize, rand_col + blocksize);
+                slice_t out_block = slice_image(out, si, sj + overlap, si + blocksize, sj + blocksize);
+                slice_t in_block = slice_image(in, rand_row, rand_col + overlap, rand_row + blocksize, rand_col + blocksize);
                 slice_cpy(in_block, out_block);
             }
             else if (col == 0)
             {
-                slice_t out_block = slice_image(out, si+overlap, sj, si + blocksize, sj + blocksize);
-                slice_t in_block = slice_image(in, rand_row+overlap, rand_col, rand_row + blocksize, rand_col + blocksize);
+                slice_t out_block = slice_image(out, si + overlap, sj, si + blocksize, sj + blocksize);
+                slice_t in_block = slice_image(in, rand_row + overlap, rand_col, rand_row + blocksize, rand_col + blocksize);
                 slice_cpy(in_block, out_block);
             }
             else
             {
-                slice_t out_block = slice_image(out, si+overlap, sj+overlap, si + blocksize, sj + blocksize);
-                slice_t in_block = slice_image(in, rand_row+overlap, rand_col+overlap, rand_row + blocksize, rand_col + blocksize);
+                slice_t out_block = slice_image(out, si + overlap, sj + overlap, si + blocksize, sj + blocksize);
+                slice_t in_block = slice_image(in, rand_row + overlap, rand_col + overlap, rand_row + blocksize, rand_col + blocksize);
                 slice_cpy(in_block, out_block);
             }
             // slice_t out_block = slice_image(out, si, sj, si + blocksize, sj + blocksize);
