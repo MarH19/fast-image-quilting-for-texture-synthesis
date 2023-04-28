@@ -100,7 +100,7 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int c)
         {
             for (int k = 0; k < out.channels; k++)
             {
-                out.data[i * out.jumpsize + (out.width - 1) * 3 + k] = i < start ? slice_1.data[i * slice_1.jumpsize + (slice_1.width - 1) * 3 + k] : slice_2.data[(i * slice_2.jumpsize + slice_2.width - 1) * 3 + k];
+                out.data[i * out.jumpsize + (out.width - 1) * 3 + k] = i < start ? slice_1.data[i * slice_1.jumpsize + (slice_1.width - 1) * 3 + k] : slice_2.data[i * slice_2.jumpsize + (slice_2.width - 1) * 3 + k];
                 // if(i == start){
                 //     out.data[i * out.jumpsize + (out.width - 1) * 3 + k] = 255;
                 // }
