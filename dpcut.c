@@ -200,7 +200,7 @@ void calcErrors(slice_t slice_1, slice_t slice_2, pixel_t *errors)
             // ssd for one pixel
             pixel_t error = (pow(slice_1.data[i * slice_1.jumpsize + j] - slice_2.data[i * slice_2.jumpsize + j], 2)) + (pow(slice_1.data[i * slice_1.jumpsize + j + 1] - slice_2.data[i * slice_2.jumpsize + j + 1], 2)) + (pow(slice_1.data[i * slice_1.jumpsize + j + 2] - slice_2.data[i * slice_2.jumpsize + j + 2], 2));
             errors[i * slice_1.width + j / 3] = error;
-            printf("%lf\n", error);
+            //printf("%lf\n", error);
         }
     }
 }

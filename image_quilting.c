@@ -137,7 +137,7 @@ image_t image_quilting(image_t in, int blocksize, int num_blocks, int overlap, p
     {
         for (int col = 0; col < num_blocks; col++)
         {
-            printf("row: %d, col: %d\n", row, col);
+            //printf("row: %d, col: %d\n", row, col);
             int si = row * (blocksize - overlap);
             int sj = col * (blocksize - overlap);
             memset(errors, 0, errorlen);
