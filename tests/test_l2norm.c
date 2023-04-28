@@ -9,16 +9,6 @@
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #define IS_CLOSE(a, b) (ABS(a - b) <= MAX(REL_TOL * MAX(ABS(a), ABS(b)), ABS_TOL))
 
-/*
-typedef struct
-{
-    pixel_t *data;
-    int width;
-    int height;
-    int channels;
-    int jumpsize;
-} slice_t;
-*/
 void test_l2norm_duplicate(void)
 {
     pixel_t arr[] = {1.0, 2.0, 3.0, 4.0};
