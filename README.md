@@ -2,13 +2,15 @@
 
 ## Build Information
 
-To build the main function in test.c use
+To build the tests run in a linux shell the following command.
 ```shell
-$ make test
-$ ./test
-$ make cleantest
+$ make tests
+$ ./bin/tests/test_l2norm.out  # a small test script
+$ ./bin/tests/test.out         # play-function
+$ make cleanall
 ```
-nothing fancy just setting everything up such that we can have simpler compile targets later.
+This compiles the code only if changes occur and does basically all the linking stuff on its own.
+The manual compilation is of course still possible.
 
 ## Useful links
 
