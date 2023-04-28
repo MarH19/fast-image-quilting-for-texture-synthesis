@@ -39,7 +39,6 @@ $(TEST_SRCS): buildrepo $(SRC_OBJS) $@
 
 $(OBJDIR)/%.o: %.c
 	@echo "Generating dependencies for $<..."
-	@echo $<, $@, $(subst .o,.d,$@)
 	@$(call make-dpend,$<,$@,$(subst .o,.d,$@))
 	@echo "Compiling $<..."
 	@$(CC) $(CFLAGS) -c $< -o $@
