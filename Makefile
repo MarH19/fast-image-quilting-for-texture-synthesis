@@ -29,6 +29,9 @@ ALLDIRS = $(SRCDIR) $(TESTDIR)
 # =============== #
 
 # so far every test-file has a main method
+run_tests: tests
+	@$(run_tests)
+
 tests: $(TEST_SRCS)
 
 $(TEST_SRCS): buildrepo $(SRC_OBJS) $@
@@ -60,6 +63,13 @@ define make-depend
 		  -MT $2    \
 		  $(CFLAGS) \
 		  $1
+endef
+
+define run_tests
+	for f in $(TEST_BINS);\
+	do\
+  		$$f;\
+	done
 endef
 
 clean:
