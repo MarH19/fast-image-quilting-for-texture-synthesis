@@ -44,6 +44,7 @@ double rdtsc(image_t in, int blocksize, int num_blocks, int overlap, pixel_t tol
     cycles = stop_tsc(start) / num_runs;
     return (double)cycles;
 }
+/*
 int main()
 {
     // TO COUNT FLOPS:
@@ -61,4 +62,5 @@ int main()
     printf("Time (in seconds): %lf \n", r / FREQUENCY);
     // imwrite(out, "out.jpg");
 }
+*/
 // gcc -O3 -mfma -fno-tree-vectorize -ffp-contract=fast timing.c image_quilting.c dpcut.c imageio.c L2norm.c -o timing -lm
