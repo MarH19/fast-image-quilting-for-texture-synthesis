@@ -2,52 +2,73 @@
 # =============== #
 # CONFIG
 # =============== #
-CC = gcc
-SRCFOLDER = src
-OBJS = image_quilting.o dpcut.o imageio.o L2norm.o
+CC        = gcc
 
-# =============== #
-# COMPILATION
-# =============== #
+SRCDIR    = src
+TESTDIR   = tests
+OBJDIR    = obj
+BINDIR    = bin
 
 DEBUG    = -g -DDEBUG
 INCLUDES = -I./include
 LIBS     = -lm
 CFLAGS   = -Wall $(INCLUDES) $(LIBS)
 
-# obj holds src object files
-# OBJS     = $(patsubst %.c,   $(OBJDIR)/%.o, $(SRC))
+# =============== #
+# OBJECTS FILES
+# =============== #
+C_SRCS = $(wildcard $(SRCDIR)/*.c)
+SRC_OBJS = $(patsubst %.c, $(OBJDIR)/%.o, $(C_SRCS))
+
+TEST_SRCS      = $(wildcard $(TESTDIR)/*.c)
+TEST_BINS      = $(patsubst %.c, $(BINDIR)/%.out, $(TEST_SRCS))
+ALLDIRS = $(SRCDIR) $(TESTDIR)
 
 # =============== #
 # TARGETS
 # =============== #
 
-test: test.o $(OBJS)
-	@echo link together
-	$(CC) -o test test.o $(OBJS) $(CFLAGS)
+# so far every test-file has a main method
+tests: $(TEST_SRCS)
 
-test.o: $(SRCFOLDER)/test.c include/image_quilting.h
-	@echo compile test
-	@$(CC) $(SRCFOLDER)/test.c -c $(CFLAGS)
+$(TEST_SRCS): buildrepo $(SRC_OBJS) $@
+	@mkdir -p `dirname $(patsubst %.c, $(BINDIR)/%.out, $@)`
+	@echo "Linking $@..."
+	@$(CC) $(SRC_OBJS) $(CFLAGS) $@ -o $(patsubst %.c, $(BINDIR)/%.out, $@)
 
-image_quilting.o: $(SRCFOLDER)/image_quilting.c include/image_quilting.h
-	@echo compile image_quilting
-	@$(CC) $(SRCFOLDER)/image_quilting.c -c $(CFLAGS)
 
-dpcut.o: $(SRCFOLDER)/dpcut.c include/image_quilting.h
-	@echo compile dpcut
-	@$(CC) $(SRCFOLDER)/dpcut.c -c $(CFLAGS)
+$(OBJDIR)/%.o: %.c
+	@echo "Generating dependencies for $<..."
+	@echo $<, $@, $(subst .o,.d,$@)
+	@$(call make-dpend,$<,$@,$(subst .o,.d,$@))
+	@echo "Compiling $<..."
+	@$(CC) $(CFLAGS) -c $< -o $@
 
-imageio.o: $(SRCFOLDER)/imageio.c include/image_quilting.h
-	@echo compile imagio
-	@$(CC) $(SRCFOLDER)/imageio.c -c $(CFLAGS)
+buildrepo:
+	@$(call make-repo)
 
-L2norm.o: $(SRCFOLDER)/L2norm.c include/image_quilting.h
-	@echo compile L2norm
-	@$(CC) $(SRCFOLDER)/L2norm.c -c $(CFLAGS)
+define make-repo
+	for dir in $(ALLDIRS);\
+	do \
+	  mkdir -p $(OBJDIR)/$$dir;\
+	done
+endef
 
-cleantest:
-	rm test test.o $(OBJS)
+define make-depend
+	$(CC) -MM       \
+	      -MF $3    \
+		  -MP       \
+		  -MT $2    \
+		  $(CFLAGS) \
+		  $1
+endef
 
-# requirement on buildrepo and if any SRCFILES changed
-$(BINDIR)/$(BIN_TEST): buildrepo $(SRCFILES)
+clean:
+	$(RM) -r $(OBJDIR)
+
+cleanbin:
+	$(RM) -r $(BINDIR)
+
+cleanall: clean cleanbin
+
+.PHONY: cleanbin clean cleanall

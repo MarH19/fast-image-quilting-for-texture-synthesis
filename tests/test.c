@@ -13,3 +13,5 @@ int main()
 }
 // gcc -I./include src/test.c src/image_quilting.c src/dpcut.c src/imageio.c src/L2norm.c -lm
 // gcc src/test.c src/image_quilting.c src/dpcut.c src/imageio.c src/L2norm.c  -o test -lm
+// make tests
+// ./bin/tests/test.out

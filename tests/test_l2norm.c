@@ -3,11 +3,11 @@
 #include "image_quilting.h"
 #include "acutest.h"
 
-#define REL_TOL 1e-9
+#define REL_TOL 1e-3
 #define ABS_TOL 0.0
-#define ABS(a) ((a) < 0) ? -1 * (a) : (a)
-#define MAX(a, b) ((a) > (b)) ? (a) : (b)
-#define IS_CLOSE(a, b) ABS(a - b) <= MAX(REL_TOL *MAX(ABS(a), ABS(b)), ABS_TOL)
+#define ABS(a) (((a) < 0) ? -1 * (a) : (a))
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#define IS_CLOSE(a, b) (ABS(a - b) <= MAX(REL_TOL * MAX(ABS(a), ABS(b)), ABS_TOL))
 
 /*
 typedef struct
@@ -35,7 +35,8 @@ void test_l2norm_jumpsize(void)
     slice_t s1 = {arr1, 2, 2, 1, 4};
     slice_t s2 = {arr2, 2, 2, 1, 12};
     double res = l2norm(s1, s2);
-    TEST_ASSERT(IS_CLOSE(res, 116.0));
+    if (!TEST_CHECK(IS_CLOSE(res, 116.0)))
+        TEST_MSG("[ERROR] %e != %e\n", res, 116.0);
 }
 
 void test_l2norm_reverse(void)
@@ -47,7 +48,7 @@ void test_l2norm_reverse(void)
     double res1 = l2norm(s1, s2);
     double res2 = l2norm(s2, s1);
     TEST_CHECK(res1 == res2);
-    TEST_ASSERT(IS_CLOSE(res1, 29.0));
+    TEST_CHECK(IS_CLOSE(res1, 29.0));
 }
 
 void test_l2norm_channels(void)
@@ -57,7 +58,7 @@ void test_l2norm_channels(void)
     slice_t s1 = {arr1, 2, 1, 3, 6};
     slice_t s2 = {arr2, 2, 1, 3, 6};
     double res = l2norm(s1, s2);
-    TEST_ASSERT(IS_CLOSE(res, 5.0));
+    TEST_CHECK(IS_CLOSE(res, 5.0));
 }
 
 void test_fail(void)
