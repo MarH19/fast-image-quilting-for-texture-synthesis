@@ -1,17 +1,9 @@
-#define STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stdio.h>
 #include "image_quilting.h"
 #include "stb_image.h"
 #include "stb_image_write.h"
-
-// ======================================================================================================== Start Piero
-#include <time.h>
-// ======================================================================================================== End Piero
-
-extern double l2norm(slice_t inp_slice, slice_t out_slice);
-extern void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int c);
-extern pixel_t *transpose(pixel_t *mat, int width, int height);
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 
 image_t imread(char *path)
 {
@@ -40,9 +32,8 @@ void imwrite(image_t image, char *path)
     unsigned char *out_image = malloc(sizeof(unsigned char) * n);
     assert(out_image);
     for (int i = 0; i < n; i++)
-    {
         out_image[i] = (unsigned char)image.data[i];
-    }
+    
     stbi_write_png(path, image.width, image.height, image.channels, out_image, image.width * image.channels);
     free(out_image);
     out_image = NULL;
@@ -92,10 +83,6 @@ Copy block of input image to block of output image
 void slice_cpy(slice_t in, slice_t out)
 {
     for (int i = 0; i < out.height; i++)
-    {
         for (int j = 0; j < out.channels * out.width; j++)
-        {
             out.data[i * out.jumpsize + j] = in.data[i * in.jumpsize + j];
-        }
-    }
 }

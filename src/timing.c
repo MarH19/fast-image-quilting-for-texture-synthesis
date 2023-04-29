@@ -44,7 +44,7 @@ double rdtsc(image_t in, int blocksize, int num_blocks, int overlap, pixel_t tol
     cycles = stop_tsc(start) / num_runs;
     return (double)cycles;
 }
-/*
+/* commented out such that makefile works, later move to other folder
 int main()
 {
     // TO COUNT FLOPS:
