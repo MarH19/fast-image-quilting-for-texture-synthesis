@@ -1,9 +1,10 @@
 #include <stdlib.h>
+#include <math.h>
 
 #include "image_quilting.h"
 #include "acutest.h"
 
-#define REL_TOL 1e-3
+#define REL_TOL 1e-9
 #define ABS_TOL 0.0
 #define ABS(a) (((a) < 0) ? -1 * (a) : (a))
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
@@ -20,13 +21,14 @@ void test_l2norm_duplicate(void)
 void test_l2norm_jumpsize(void)
 {
     // we want to generate 2x2 arrays
-    pixel_t arr1[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0};
+    pixel_t arr1[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 4.0, 2.0};
     pixel_t arr2[] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-    slice_t s1 = {arr1, 2, 2, 1, 4};
-    slice_t s2 = {arr2, 2, 2, 1, 12};
+    slice_t s1 = {arr1, 2, 2, 1, 6};
+    slice_t s2 = {arr2, 2, 2, 1, 14};
+    double expected_res = 5.0;
     double res = l2norm(s1, s2);
-    if (!TEST_CHECK(IS_CLOSE(res, 116.0)))
-        TEST_MSG("[ERROR] %e != %e\n", res, 116.0);
+    if (!TEST_CHECK(IS_CLOSE(res, expected_res)))
+        TEST_MSG("[ERROR] %e != %e\n", res, expected_res);
 }
 
 void test_l2norm_reverse(void)
@@ -38,7 +40,9 @@ void test_l2norm_reverse(void)
     double res1 = l2norm(s1, s2);
     double res2 = l2norm(s2, s1);
     TEST_CHECK(res1 == res2);
-    TEST_CHECK(IS_CLOSE(res1, 29.0));
+    double expected_res = sqrt(29.0);
+    if (!TEST_CHECK(IS_CLOSE(res1, expected_res)))
+        TEST_MSG("[ERROR] %e != %e\n", res1, expected_res);
 }
 
 void test_l2norm_channels(void)
@@ -48,7 +52,9 @@ void test_l2norm_channels(void)
     slice_t s1 = {arr1, 2, 1, 3, 6};
     slice_t s2 = {arr2, 2, 1, 3, 6};
     double res = l2norm(s1, s2);
-    TEST_CHECK(IS_CLOSE(res, 5.0));
+    double expected_res = sqrt(7.0);
+    if (!TEST_CHECK(IS_CLOSE(res, expected_res)))
+        TEST_MSG("[ERROR] %e != %e\n", res, expected_res);
 }
 
 void test_fail(void)

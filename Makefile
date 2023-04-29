@@ -30,7 +30,7 @@ ALLDIRS = $(SRCDIR) $(TESTDIR)
 
 # so far every test-file has a main method
 run_tests: tests
-	@$(run_tests)
+	@$(execute-tests)
 
 tests: $(TEST_SRCS)
 
@@ -65,7 +65,7 @@ define make-depend
 		  $1
 endef
 
-define run_tests
+define execute-tests
 	for f in $(TEST_BINS);\
 	do\
   		$$f;\
