@@ -1,10 +1,11 @@
-#include "image_quilting.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "image_quilting.h"
+#include "utils.h"
 
-void calcErrors(slice_t slice_1, slice_t slice_2, pixel_t *errors);
-pixel_t *transpose(pixel_t *mat, int width, int height);
+ustatic void calc_errors(slice_t slice_1, slice_t slice_2, pixel_t *errors);
+ustatic pixel_t *transpose(pixel_t *mat, int width, int height);
 
 // slice_1 and slice_2 of same size are merged into out, c = 0 for vertical case, c = 1 for horizontal case
 // flop count: flops(transpose) + flops(calcerrors) + (s_width * s_height) * (3 * min + add) + s_width * (min + LT) + (s_height - 1) * (3 * min + 2 * EQ)
@@ -29,7 +30,7 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int c)
     // initialize errors array
     pixel_t *errors = malloc(sizeof(pixel_t) * width * height);
 
-    calcErrors(slice_1, slice_2, errors);
+    calc_errors(slice_1, slice_2, errors);
 
     if (c == 1)
     {
@@ -175,22 +176,27 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int c)
 
 // errors(i,j) = sum of squared differences of the 3 rgb values
 // flop count: (s_height * s_width) * 3 * (pow + add)
-void calcErrors(slice_t slice_1, slice_t slice_2, pixel_t *errors)
+void calc_errors(slice_t s1, slice_t s2, pixel_t *errors)
 {
-
-    for (int i = 0; i < slice_1.height; i++)
+    for (int i = 0; i < s1.height; i++)
     {
-        for (int j = 0; j < slice_1.width * 3; j += 3)
+        for (int j = 0; j < s1.width; j++)
         {
             // ssd for one pixel
-            pixel_t error = (pow(slice_1.data[i * slice_1.jumpsize + j] - slice_2.data[i * slice_2.jumpsize + j], 2)) + (pow(slice_1.data[i * slice_1.jumpsize + j + 1] - slice_2.data[i * slice_2.jumpsize + j + 1], 2)) + (pow(slice_1.data[i * slice_1.jumpsize + j + 2] - slice_2.data[i * slice_2.jumpsize + j + 2], 2));
-            errors[i * slice_1.width + j / 3] = error;
+            pixel_t error = 0.0;
+            for (int c = 0; c < s1.channels; c++) {
+                int idx1 = i * s1.jumpsize + j * s1.channels + c;
+                int idx2 = i * s2.jumpsize + j * s2.channels + c;
+                error += pow(s1.data[idx1] - s2.data[idx2], 2);
+            }
+            errors[i * s1.width + j] = error;
         }
     }
 }
 
 // transpose a matrix
 // flop count: 0
+/* transpose: transposes matrix into new matrix and frees! old matrix */
 pixel_t *transpose(pixel_t *mat, int width, int height)
 {
     pixel_t *mat_t = malloc(sizeof(pixel_t) * width * height);
