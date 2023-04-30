@@ -1,6 +1,6 @@
-/* 
-* This way we can make things still static while making them accessible for unit testing.
-*/
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+
+/* This way we can make things still static while making them accessible for unit testing. */
 #if UNITTEST
 #define ustatic 
 #else
