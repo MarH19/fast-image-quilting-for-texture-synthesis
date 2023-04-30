@@ -6,16 +6,16 @@
 static void calc_errors(slice_t slice_1, slice_t slice_2, pixel_t *errors);
 static pixel_t *transpose(pixel_t *mat, int width, int height);
 
-// slice_1 and slice_2 of same size are merged into out, horizontal = 0 for vertical case, horizontal = 1 for horizontal case
+// slice_1 and slice_2 of same size are merged into out, left2right = 0 for vertical case, left2right = 1 for left2right case
 // flop count: flops(transpose) + flops(calc_errors) + (s_width * s_height) * (3 * min + add) + s_width * (min + LT) + (s_height - 1) * (3 * min + 2 * EQ)
 // this is approximately: 0 + (s_height * s_width) * 3 * 2 + (s_width * s_height) * (3 + 1) + s_width * 2 + (s_height-1) * (3 + 2)
 // = (s_height * s_width) * 10 + s_width * 2 + (s_height -1) * 5 flops
-void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int horizontal)
+void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int left2right)
 {
     int width;
     int height;
 
-    if (horizontal)
+    if (left2right)
     {
         width = slice_1.height;
         height = slice_1.width;
@@ -32,7 +32,7 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int horizontal)
     calc_errors(slice_1, slice_2, dp);
 
     // transpose errors (now in row format)
-    if (horizontal)
+    if (left2right)
     {
         pixel_t* temp = transpose(dp, slice_1.width, slice_1.height);
         free(dp);
@@ -85,7 +85,7 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int horizontal)
         if (previdx < width - 1 && dp[i * width + previdx + 1] < nextval)
             nextidx = previdx + 1;
         //  fill the row of the output
-        if (horizontal)
+        if (left2right)
         {
             for (int j = 0; j < out.height; j++)
             {
