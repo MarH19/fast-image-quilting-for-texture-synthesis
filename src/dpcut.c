@@ -34,7 +34,12 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int horizontal)
 
     // transpose errors (now in row format)
     if (horizontal)
-        dp = transpose(dp, slice_1.width, slice_1.height);
+    {
+        pixel_t* temp = transpose(dp, slice_1.width, slice_1.height);
+        free(dp);
+        dp = NULL;
+        dp = temp;
+    }
 
     // fill dp table
     for (int i = 1; i < height; i++)
@@ -111,7 +116,7 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int horizontal)
 
 // errors(i,j) = sum of squared differences of the 3 rgb values
 // flop count: (s_height * s_width) * 3 * (pow + add)
-void calc_errors(slice_t s1, slice_t s2, pixel_t *errors)
+ustatic void calc_errors(slice_t s1, slice_t s2, pixel_t *errors)
 {
     for (int i = 0; i < s1.height; i++)
     {
@@ -132,8 +137,8 @@ void calc_errors(slice_t s1, slice_t s2, pixel_t *errors)
 
 // transpose a matrix
 // flop count: 0
-/* transpose: transposes matrix into new matrix and frees! old matrix */
-pixel_t *transpose(pixel_t *mat, int width, int height)
+/* transpose: transposes matrix into new matrix */
+ustatic pixel_t *transpose(pixel_t *mat, int width, int height)
 {
     pixel_t *mat_t = malloc(sizeof(pixel_t) * width * height);
     for (int i = 0; i < height; i++)
@@ -143,7 +148,5 @@ pixel_t *transpose(pixel_t *mat, int width, int height)
             mat_t[j * height + i] = mat[i * width + j];
         }
     }
-    free(mat);
-    mat = NULL;
     return mat_t;
 }

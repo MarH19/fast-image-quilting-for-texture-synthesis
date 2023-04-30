@@ -1,14 +1,9 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "image_quilting.h"
 #include "acutest.h"
-
-#define REL_TOL 1e-9
-#define ABS_TOL 0.0
-#define ABS(a) (((a) < 0) ? -1 * (a) : (a))
-#define MAX(a, b) (((a) > (b)) ? (a) : (b))
-#define IS_CLOSE(a, b) (ABS(a - b) <= MAX(REL_TOL * MAX(ABS(a), ABS(b)), ABS_TOL))
+#include "image_quilting.h"
+#include "utils.h"
 
 void test_l2norm_duplicate(void)
 {
@@ -55,60 +50,6 @@ void test_l2norm_channels(void)
     double expected_res = sqrt(7.0);
     if (!TEST_CHECK(IS_CLOSE(res, expected_res)))
         TEST_MSG("[ERROR] %e != %e\n", res, expected_res);
-}
-
-void test_fail(void)
-{
-    int a, b;
-
-    /* This condition is designed to fail so you can see what the failed test
-     * output looks like. */
-    a = 1;
-    b = 2;
-    TEST_CHECK(a + b == 5);
-
-    /* Here is TEST_CHECK_ in action. */
-    TEST_CHECK_(a + b == 5, "%d + %d == 5", a, b);
-
-    /* We may also show more information about the failure. */
-    if (!TEST_CHECK(a + b == 5))
-    {
-        TEST_MSG("a: %d", a);
-        TEST_MSG("b: %d", b);
-    }
-
-    /* The macro TEST_MSG() only outputs something when the preceding
-     * condition fails, so we can avoid the 'if' statement. */
-    TEST_CHECK(a + b == 3);
-    TEST_MSG("a: %d", a);
-    TEST_MSG("b: %d", b);
-}
-
-static void helper(void)
-{
-    /* Kill the current test with a condition which is never true. */
-    TEST_ASSERT(1 == 2);
-
-    /* This never happens because the test is aborted above. */
-    TEST_CHECK(1 + 2 == 2 + 1);
-}
-
-void test_abort(void)
-{
-    helper();
-
-    /* This test never happens because the test is aborted inside the helper()
-     * function. */
-    TEST_CHECK(1 * 2 == 2 * 1);
-}
-
-void test_crash(void)
-{
-    int *invalid = ((int *)NULL) + 0xdeadbeef;
-
-    *invalid = 42;
-    TEST_CHECK_(1 == 1, "This should never execute, due to a write into "
-                        "an invalid address.");
 }
 
 TEST_LIST = {
