@@ -3,7 +3,6 @@
 
 #include "acutest.h"
 #include "image_quilting.h"
-#include "utils.h"
 
 void test_l2norm_duplicate(void)
 {

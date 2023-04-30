@@ -34,4 +34,18 @@ slice_t slice_image(image_t image, int start_row, int start_col, int end_row, in
 image_t image_quilting(image_t in, int blocksize, int num_blocks, int overlap, pixel_t tolerance);
 void slice_cpy(slice_t in, slice_t out);
 
+#define REL_TOL 1e-9
+#define ABS_TOL 0.0
+#define ABS(a) (((a) < 0) ? -1 * (a) : (a))
+
+#ifndef MAX
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#endif
+
+#ifndef MIN
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
+#define IS_CLOSE(a, b) (ABS(a - b) <= MAX(REL_TOL * MAX(ABS(a), ABS(b)), ABS_TOL))
+
 #endif /* #ifndef IMAGE_QUILTING_HEADER */

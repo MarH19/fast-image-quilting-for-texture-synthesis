@@ -2,10 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "image_quilting.h"
-#include "utils.h"
 
-ustatic void calc_errors(slice_t slice_1, slice_t slice_2, pixel_t *errors);
-ustatic pixel_t *transpose(pixel_t *mat, int width, int height);
+static void calc_errors(slice_t slice_1, slice_t slice_2, pixel_t *errors);
+static pixel_t *transpose(pixel_t *mat, int width, int height);
 
 // slice_1 and slice_2 of same size are merged into out, horizontal = 0 for vertical case, horizontal = 1 for horizontal case
 // flop count: flops(transpose) + flops(calc_errors) + (s_width * s_height) * (3 * min + add) + s_width * (min + LT) + (s_height - 1) * (3 * min + 2 * EQ)
@@ -116,7 +115,7 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int horizontal)
 
 // errors(i,j) = sum of squared differences of the 3 rgb values
 // flop count: (s_height * s_width) * 3 * (pow + add)
-ustatic void calc_errors(slice_t s1, slice_t s2, pixel_t *errors)
+static void calc_errors(slice_t s1, slice_t s2, pixel_t *errors)
 {
     for (int i = 0; i < s1.height; i++)
     {
@@ -138,7 +137,7 @@ ustatic void calc_errors(slice_t s1, slice_t s2, pixel_t *errors)
 // transpose a matrix
 // flop count: 0
 /* transpose: transposes matrix into new matrix */
-ustatic pixel_t *transpose(pixel_t *mat, int width, int height)
+static pixel_t *transpose(pixel_t *mat, int width, int height)
 {
     pixel_t *mat_t = malloc(sizeof(pixel_t) * width * height);
     for (int i = 0; i < height; i++)
