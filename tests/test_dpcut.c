@@ -4,11 +4,11 @@
 static pixel_t data1[] = {7.0, 6.0, 1.0, 0.0, 0.0, 3.0, 4.0, 2.0, 2.0, 8.0, 8.0, 8.0, 2.0, 3.0, 1.0};
 static pixel_t data2[] = {5.0, 7.0, 4.0, 1.0, 3.0, 0.0, 2.0, 1.0, 4.0, 5.0, 7.0, 6.0, 0.0, 0.0, 0.0};
 static pixel_t exp_res[] = {7.0, 7.0, 4.0, 1.0, 3.0, 0.0, 4.0, 1.0, 4.0, 8.0, 7.0, 6.0, 2.0, 3.0, 0.0};
-const static int size = sizeof(data1) / sizeof(pixel_t);
-const static int width  = 3;
-const static int height = size / width;
-const static int channels = 1;
-const static int jumpsize = width * channels;
+static const int size = sizeof(data1) / sizeof(pixel_t);
+static const int width  = 3;
+static const int height = size / width;
+static const int channels = 1;
+static const int jumpsize = width * channels;
 
 
 /* a bit of a complicated test just to check execution

@@ -9,10 +9,11 @@ TESTDIR   = tests
 OBJDIR    = obj
 BINDIR    = bin
 
-DEBUG    = -g -DDEBUG
+DEBUG    = -g3 -DDEBUG
 INCLUDES = -I./include
 LIBS     = -lm
-CFLAGS   = -Wall $(INCLUDES) $(LIBS)
+WARNINGS = -Wall -Wextra -fsanitize=address,undefined
+CFLAGS   = $(WARNINGS) $(DEBUG) $(INCLUDES) $(LIBS)
 
 # =============== #
 # OBJECTS FILES
