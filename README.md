@@ -16,10 +16,9 @@ $ make benchmarks
 $ ./bin/benchmark/test.out  # runs benchmark tests
 $ make cleanall
 ```
+`make benchmarks` and `make tests` use different compiler flags to compile their binaries.
+But in Makefiles object files are **not** recompiled when some flags change. Therefore it is important to *always* run `make clean` or `make cleanall` between `make tests` and `make benchmarks`.
 
-It is important to note that benchmarks and tests use different flags to compile.
-But if you use `make tests` then the object files get **not** recompiled if you use `make benchmarks`.
-Therefore if you switch between those to modes *always* run `make clean` or `make cleanall` beforehand. 
 
 
 This compiles the code only if changes occur and does basically all the linking stuff on its own.
