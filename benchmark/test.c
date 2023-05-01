@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <math.h>
 #ifndef WIN32
 #include <sys/time.h>
 #endif
@@ -72,7 +72,7 @@ int main()
         int ih = t.height;
         int iw = t.width;
         int n = t.width * t.height;
-        flops1 = nb * (nb - 1) * 2 * ((ih - bs + 1) * (iw - bs + 1) * (1 + ov * bs * 3 * 3 + 1) + (ov * bs) * 10 + ov * 2 + (bs - 1) * 5) + (nb - 1) ^ 2 * (ov * ov * 3 * 3 + 1) + (nb * nb - 1) * ((ih - bs + 1) * (iw - bs + 1) * 3 + 2);
+        flops1 = nb * (nb - 1) * 2 * ((ih - bs + 1) * (iw - bs + 1) * (1 + ov * bs * 3 * 3 + 1) + (ov * bs) * 10 + ov * 2 + (bs - 1) * 5) + pow((nb - 1),2) * (ov * ov * 3 * 3 + 1) + (nb * nb - 1) * ((ih - bs + 1) * (iw - bs + 1) * 3 + 2);
         r = rdtsc(t, bs, nb, ov, tolerance);
         // save flops,n,time (in seconds), cycles into the csv
         printf("%d,%d,%lf,%lf\n", flops1, n, r / FREQUENCY, r);
@@ -91,7 +91,7 @@ int main()
     {
         bs = i;
         ov = bs / 6;
-        flops2 = nb * (nb - 1) * 2 * ((ih - bs + 1) * (iw - bs + 1) * (1 + ov * bs * 3 * 3 + 1) + (ov * bs) * 10 + ov * 2 + (bs - 1) * 5) + (nb - 1) ^ 2 * (ov * ov * 3 * 3 + 1) + (nb * nb - 1) * ((ih - bs + 1) * (iw - bs + 1) * 3 + 2);
+        flops2 = nb * (nb - 1) * 2 * ((ih - bs + 1) * (iw - bs + 1) * (1 + ov * bs * 3 * 3 + 1) + (ov * bs) * 10 + ov * 2 + (bs - 1) * 5) + pow((nb - 1),2) * (ov * ov * 3 * 3 + 1) + (nb * nb - 1) * ((ih - bs + 1) * (iw - bs + 1) * 3 + 2);
         r2 = rdtsc(in, i, nb, ov, tolerance);
         // save flops,blocksize, time (in seconds), cycles into the csv
         printf("%d,%d,%lf,%lf\n", flops2, bs, r2 / FREQUENCY, r2);

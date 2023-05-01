@@ -21,7 +21,7 @@ BENCHFLAGS = $(OPTIMIZE) $(INCLUDES) $(LIBS)
 
 # CFLAGS changes if you build with tests or benchmarks
 # but once built it does not recompile (e.g. source)
-# therefor make cleanall always before you switch
+# therefore make cleanall always before you switch
 tests: CFLAGS = $(TESTFLAGS)
 benchmarks: CFLAGS = $(BENCHFLAGS)
 
