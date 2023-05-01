@@ -57,7 +57,7 @@ benchmarks: $(BENCH_SRCS)
 $(TEST_SRCS) $(BENCH_SRCS): buildrepo $(SRC_OBJS) $@
 	@mkdir -p `dirname $(patsubst %.c, $(BINDIR)/%.out, $@)`
 	@echo "Linking $@..."
-	$(CC) $(SRC_OBJS) $(CFLAGS) $@ -o $(patsubst %.c, $(BINDIR)/%.out, $@)
+	@$(CC) $(SRC_OBJS) $(CFLAGS) $@ -o $(patsubst %.c, $(BINDIR)/%.out, $@)
 
 
 $(OBJDIR)/%.o: %.c
