@@ -9,6 +9,14 @@ $ ./bin/tests/test_l2norm.out  # a small test script
 $ ./bin/tests/test.out         # play-function
 $ make cleanall
 ```
+To build the benchmark run in a linux shell the following command.
+```shell
+$ make benchmark
+$ ./bin/benchmark/test.out  # runs benchmark tests
+$ make cleanall
+```
+
+
 This compiles the code only if changes occur and does basically all the linking stuff on its own.
 The manual compilation is of course still possible.
 

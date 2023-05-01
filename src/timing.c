@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <time.h>
 #include "tsc_x86.h"
-
+#include "timing.h"
 #define NUM_RUNS 1
 #define CYCLES_REQUIRED 1e8
 #define CALIBRATE
