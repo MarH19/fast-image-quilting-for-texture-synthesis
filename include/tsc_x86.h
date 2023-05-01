@@ -102,3 +102,5 @@ myInt64 stop_tsc(myInt64 start)
 	CPUID();
 	return COUNTER_VAL(end) - start;
 }
+
+#define FREQUENCY 2.3e9

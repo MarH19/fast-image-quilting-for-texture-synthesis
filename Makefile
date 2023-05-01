@@ -6,20 +6,22 @@ CC        = gcc
 
 SRCDIR    = src
 TESTDIR   = tests
-# for benchmark
-BENCHDIR = benchmark
+BENCHDIR  = benchmark
 OBJDIR    = obj
 BINDIR    = bin
 
-DEBUG    = -g3 -DDEBUG
-INCLUDES = -I./include
-LIBS     = -lm
-WARNINGS = -Wall -Wextra -fsanitize=address,undefined
-CFLAGS   = $(WARNINGS) $(DEBUG) $(INCLUDES) $(LIBS)
+DEBUG     = -g3 -DDEBUG
+INCLUDES  = -I./include
+LIBS      = -lm
+WARNINGS  = -Wall -Wextra -fsanitize=address,undefined
+OPTIMIZE  = -O3 -mfma -fno-tree-vectorize -ffp-contract=fast
 
-# for benchmark
-GCCFLAGS = -O3 -mfma -fno-tree-vectorize -ffp-contract=fast
-CFLAGS2 = $(GCCFLAGS) $(INCLUDES) $(LIBS)
+TESTFLAGS  = $(WARNINGS) $(DEBUG) $(INCLUDES) $(LIBS)
+BENCHFLAGS = $(OPTIMIZE) $(INCLUDES) $(LIBS)
+
+# change CFLAGS whenever you want to 
+# switch between TESTFLAGS and BENCHFLAGS
+CFLAGS   = $(BENCHFLAGS)
 
 # =============== #
 # OBJECTS FILES
@@ -29,24 +31,28 @@ SRC_OBJS = $(patsubst %.c, $(OBJDIR)/%.o, $(C_SRCS))
 
 TEST_SRCS      = $(wildcard $(TESTDIR)/*.c)
 TEST_BINS      = $(patsubst %.c, $(BINDIR)/%.out, $(TEST_SRCS))
-ALLDIRS = $(SRCDIR) $(TESTDIR)
 
-# for benchmark
 BENCH_SRCS      = $(wildcard $(BENCHDIR)/*.c)
 BENCH_BINS      = $(patsubst %.c, $(BINDIR)/%.out, $(BENCH_SRCS))
-ALLDIRS2 = $(SRCDIR) $(BENCHDIR)
+
+ALLDIRS = $(SRCDIR) $(TESTDIR) $(BENCHDIR)
 
 # =============== #
 # TARGETS
 # =============== #
 
-# so far every test-file has a main method
+# so far every file in tests-folder has main
 run_tests: tests
-	@$(execute-tests)
+	@$(call execute-folder,$(TEST_BINS))
+
+run_benchmarks: benchmarks
+	@$(call execute-folder,$(BENCH_BINS))
 
 tests: $(TEST_SRCS)
 
-$(TEST_SRCS): buildrepo $(SRC_OBJS) $@
+benchmarks: $(BENCH_SRCS)
+
+$(TEST_SRCS) $(BENCH_SRCS): buildrepo $(SRC_OBJS) $@
 	@mkdir -p `dirname $(patsubst %.c, $(BINDIR)/%.out, $@)`
 	@echo "Linking $@..."
 	@$(CC) $(SRC_OBJS) $(CFLAGS) $@ -o $(patsubst %.c, $(BINDIR)/%.out, $@)
@@ -54,7 +60,7 @@ $(TEST_SRCS): buildrepo $(SRC_OBJS) $@
 
 $(OBJDIR)/%.o: %.c
 	@echo "Generating dependencies for $<..."
-	@$(call make-dpend,$<,$@,$(subst .o,.d,$@))
+	@$(call make-depend,$<,$@,$(subst .o,.d,$@))
 	@echo "Compiling $<..."
 	@$(CC) $(CFLAGS) -c $< -o $@
 
@@ -77,64 +83,8 @@ define make-depend
 		  $1
 endef
 
-define execute-tests
+define execute-folder
 	for f in $(TEST_BINS);\
-	do\
-  		$$f;\
-	done
-endef
-
-clean:
-	$(RM) -r $(OBJDIR)
-
-cleanbin:
-	$(RM) -r $(BINDIR)
-
-cleanall: clean cleanbin
-
-.PHONY: cleanbin clean cleanall
-
-#############################################################################
-# BENCHMARK
-
-run_benchmark: benchmark
-	@$(execute-benchmark)
-
-benchmark: $(BENCH_SRCS)
-
-$(BENCH_SRCS): buildrepo $(SRC_OBJS) $@
-	@mkdir -p `dirname $(patsubst %.c, $(BINDIR)/%.out, $@)`
-	@echo "Linking $@..."
-	@$(CC) $(SRC_OBJS) $(CFLAGS2) $@ -o $(patsubst %.c, $(BINDIR)/%.out, $@)
-
-
-$(OBJDIR)/%.o: %.c
-	@echo "Generating dependencies for $<..."
-	@$(call make-dpend,$<,$@,$(subst .o,.d,$@))
-	@echo "Compiling $<..."
-	@$(CC) $(CFLAGS2) -c $< -o $@
-
-buildrepo:
-	@$(call make-repo)
-
-define make-repo
-	for dir in $(ALLDIRS2);\
-	do \
-	  mkdir -p $(OBJDIR)/$$dir;\
-	done
-endef
-
-define make-depend
-	$(CC) -MM       \
-	      -MF $3    \
-		  -MP       \
-		  -MT $2    \
-		  $(CFLAGS2) \
-		  $1
-endef
-
-define execute-benchmark
-	for f in $(BENCH_BINS);\
 	do\
   		$$f;\
 	done
