@@ -10,6 +10,7 @@ int main()
     
     
     // measure different input sizes with following fixed parameters
+    // TODO check if nb is valid for the selected images
     int nb = 30;
     int bs = 35;
     int ov = bs/6;
@@ -35,6 +36,7 @@ int main()
     fclose(fp1);
 
     // measure different blocksizes 
+    // TODO check if nb is valid for the selected image
     image_t in = imread("data/internet/500KB");
     int ih = in.height;
     int iw = in.width;
