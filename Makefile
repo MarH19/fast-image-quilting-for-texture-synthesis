@@ -19,9 +19,11 @@ OPTIMIZE  = -O3 -mfma -fno-tree-vectorize -ffp-contract=fast
 TESTFLAGS  = $(WARNINGS) $(DEBUG) $(INCLUDES) $(LIBS)
 BENCHFLAGS = $(OPTIMIZE) $(INCLUDES) $(LIBS)
 
-# change CFLAGS whenever you want to 
-# switch between TESTFLAGS and BENCHFLAGS
-CFLAGS   = $(BENCHFLAGS)
+# CFLAGS changes if you build with tests or benchmarks
+# but once built it does not recompile (e.g. source)
+# therefor make cleanall always before you switch
+tests: CFLAGS = $(TESTFLAGS)
+benchmarks: CFLAGS = $(BENCHFLAGS)
 
 # =============== #
 # OBJECTS FILES
@@ -55,7 +57,7 @@ benchmarks: $(BENCH_SRCS)
 $(TEST_SRCS) $(BENCH_SRCS): buildrepo $(SRC_OBJS) $@
 	@mkdir -p `dirname $(patsubst %.c, $(BINDIR)/%.out, $@)`
 	@echo "Linking $@..."
-	@$(CC) $(SRC_OBJS) $(CFLAGS) $@ -o $(patsubst %.c, $(BINDIR)/%.out, $@)
+	$(CC) $(SRC_OBJS) $(CFLAGS) $@ -o $(patsubst %.c, $(BINDIR)/%.out, $@)
 
 
 $(OBJDIR)/%.o: %.c
