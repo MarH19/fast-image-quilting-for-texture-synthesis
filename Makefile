@@ -14,7 +14,7 @@ DEBUG     = -g3 -DDEBUG
 INCLUDES  = -I./include
 LIBS      = -lm
 WARNINGS  = -Wall -Wextra -fsanitize=address,undefined
-OPTIMIZE  = -O3 -mfma -fno-tree-vectorize -ffp-contract=fast
+OPTIMIZE  = -O3 -mfma -fno-tree-vectorize 
 
 TESTFLAGS  = $(WARNINGS) $(DEBUG) $(INCLUDES) $(LIBS)
 BENCHFLAGS = $(OPTIMIZE) $(INCLUDES) $(LIBS)
