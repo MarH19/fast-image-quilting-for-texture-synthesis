@@ -40,6 +40,7 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int left2right)
         dp = temp;
     }
 
+
     // fill dp table
     for (int i = 1; i < height; i++)
     {
