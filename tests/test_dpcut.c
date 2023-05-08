@@ -94,10 +94,21 @@ void test_dpcut_channels()
 
 void test_dpcut_singleton()
 {
+    pixel_t d1[1] = {5};
+    pixel_t d2[1] = {7};
+    pixel_t r[1];
+    slice_t s1 = {d1, 1, 1, 1, 1};
+    slice_t s2 = {d2, 1, 1, 1, 1};
+    slice_t out = {r, 1, 1, 1, 1};
+    dpcut(s1, s2, out, 0);
+    TEST_CHECK(r[0] == d2[0]);
+    dpcut(s1, s2, out, 1);
+    TEST_CHECK(r[0] == d2[0]);
 }
 
 TEST_LIST = {
     {"dpcut_normal", test_dpcut_normal},
     {"dpcut_transpose", test_dpcut_transpose},
     {"dpcut_channels", test_dpcut_channels},
+    {"dpcut_singleton", test_dpcut_singleton},
     {NULL, NULL}};
