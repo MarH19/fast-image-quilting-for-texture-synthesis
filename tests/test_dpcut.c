@@ -68,7 +68,6 @@ void test_dpcut_channels()
     pixel_t cdata1[3 * size], cdata2[3 * size], cexp_res[3 * size], res[3 * size];
     // create the same pattern now with three colors
     for (int i = 0; i < height; i++)
-    {
         for (int j = 0; j < width; j++)
         {
             cdata1[i * (3*width) + j*3 + 0] = data1[i*width + j];
@@ -77,61 +76,20 @@ void test_dpcut_channels()
             cdata2[i * (3*width) + j*3 + 0] = data2[i*width + j];
             cdata2[i * (3*width) + j*3 + 1] = data2[i*width + j];
             cdata2[i * (3*width) + j*3 + 2] = 0.0;
-            cexp_res[i * (3*width) + j*3 + 0] = cexp_res[i*width + j];
-            cexp_res[i * (3*width) + j*3 + 1] = cexp_res[i*width + j];
+            cexp_res[i * (3*width) + j*3 + 0] = exp_res[i*width + j];
+            cexp_res[i * (3*width) + j*3 + 1] = exp_res[i*width + j];
             cexp_res[i * (3*width) + j*3 + 2] = 0.0;
         }
-    }
-    printf("\n");
-    for (int i = 0; i < height; i++)
-    {
-        for (int j = 0; j < width; j++)
-        {
-            printf("(");
-            for (int c=0; c < 3; c++) {
-                printf("%2.f ", cdata1[i * (3*width) + j*3 + c]);
-            }
-            printf(") ");
-        }
-        printf("\n");
-    }
+
     slice_t ts1 = {cdata1, width, height, 3, width * 3};
     slice_t ts2 = {cdata2, width, height, 3, width * 3};
     slice_t out = {res, width, height, 3, width * 3};
     dpcut(ts1, ts2, out, 0);
     for (int i = 0; i < 3*size; i++)
-    {
-        if (!TEST_CHECK(IS_CLOSE(res[i], cexp_res[i])))
+       if (!TEST_CHECK(IS_CLOSE(res[i], cexp_res[i])))
             TEST_MSG(
                 "index %i, expected %e, got %e, diff %e\n",
                 i, cexp_res[i], res[i], res[i] - cexp_res[i]);
-    }
-        printf("\n");
-    for (int i = 0; i < height; i++)
-    {
-        for (int j = 0; j < width; j++)
-        {
-            printf("(");
-            for (int c=0; c < 3; c++) {
-                printf("%2.f ", cexp_res[i * (3*width) + j*3 + c]);
-            }
-            printf(") ");
-        }
-        printf("\n");
-    }
-        printf("\n");
-    for (int i = 0; i < height; i++)
-    {
-        for (int j = 0; j < width; j++)
-        {
-            printf("(");
-            for (int c=0; c < 3; c++) {
-                printf("%2.f ", res[i * (3*width) + j*3 + c]);
-            }
-            printf(") ");
-        }
-        printf("\n");
-    }
 }
 
 TEST_LIST = {

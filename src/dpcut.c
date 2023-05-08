@@ -40,18 +40,6 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int left2right)
         dp = temp;
     }
 
-    for (int i = 0; i < height; i++)
-    {
-        for (int j = 0; j < width; j++)
-        {
-            printf("(");
-            for (int c=0; c < slice_1.channels; c++) {
-                printf("%2.f ", res[i * (3*width) + j*3 + c]);
-            }
-            printf(") ");
-        }
-        printf("\n");
-    }
 
     // fill dp table
     for (int i = 1; i < height; i++)
