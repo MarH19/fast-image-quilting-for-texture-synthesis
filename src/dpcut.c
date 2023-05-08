@@ -34,12 +34,11 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int left2right)
     // transpose errors (now in row format)
     if (left2right)
     {
-        pixel_t* temp = transpose(dp, slice_1.width, slice_1.height);
+        pixel_t *temp = transpose(dp, slice_1.width, slice_1.height);
         free(dp);
         dp = NULL;
         dp = temp;
     }
-
 
     // fill dp table
     for (int i = 1; i < height; i++)
