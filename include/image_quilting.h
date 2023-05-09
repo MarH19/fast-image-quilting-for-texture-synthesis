@@ -43,6 +43,8 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int left2right);
 
 /* image_quilting.c */
 image_t image_quilting(image_t in, int blocksize, int num_blocks, int overlap, pixel_t tolerance);
+coord find(pixel_t *errors, int height, int width, pixel_t tolerance);
+
 
 #define REL_TOL 1e-9
 #define ABS_TOL 0.0
