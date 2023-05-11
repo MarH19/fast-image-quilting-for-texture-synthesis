@@ -2,7 +2,8 @@
 # =============== #
 # CONFIG
 # =============== #
-CC        = gcc
+# everything with ?= can also set from cli
+CC       ?= gcc
 
 SRCDIR    = src
 TESTDIR   = tests
@@ -12,7 +13,7 @@ BINDIR    = bin
 
 DEBUG     = -g3 -DDEBUG
 INCLUDES  = -I./include
-LIBS      = -lm
+LIBS     ?= -lm
 WARNINGS  = -Wall -Wextra -fsanitize=address,undefined
 OPTIMIZE  = -O3 -mfma -fno-tree-vectorize 
 
@@ -22,20 +23,20 @@ BENCHFLAGS = $(OPTIMIZE) $(INCLUDES) $(LIBS)
 # CFLAGS changes if you build with tests or benchmarks
 # but once built it does not recompile (e.g. source)
 # therefore make cleanall always before you switch
-tests: CFLAGS = $(TESTFLAGS)
+tests:      CFLAGS = $(TESTFLAGS)
 benchmarks: CFLAGS = $(BENCHFLAGS)
 
 # =============== #
 # OBJECTS FILES
 # =============== #
-C_SRCS = $(wildcard $(SRCDIR)/*.c)
-SRC_OBJS = $(patsubst %.c, $(OBJDIR)/%.o, $(C_SRCS))
+C_SRCS     = $(wildcard $(SRCDIR)/*.c)
+SRC_OBJS   = $(patsubst %.c, $(OBJDIR)/%.o, $(C_SRCS))
 
-TEST_SRCS      = $(wildcard $(TESTDIR)/*.c)
-TEST_BINS      = $(patsubst %.c, $(BINDIR)/%.out, $(TEST_SRCS))
+TEST_SRCS  = $(wildcard $(TESTDIR)/*.c)
+TEST_BINS  = $(patsubst %.c, $(BINDIR)/%.out, $(TEST_SRCS))
 
-BENCH_SRCS      = $(wildcard $(BENCHDIR)/*.c)
-BENCH_BINS      = $(patsubst %.c, $(BINDIR)/%.out, $(BENCH_SRCS))
+BENCH_SRCS = $(wildcard $(BENCHDIR)/*.c)
+BENCH_BINS = $(patsubst %.c, $(BINDIR)/%.out, $(BENCH_SRCS))
 
 ALLDIRS = $(SRCDIR) $(TESTDIR) $(BENCHDIR)
 
@@ -57,7 +58,7 @@ benchmarks: $(BENCH_SRCS)
 $(TEST_SRCS) $(BENCH_SRCS): buildrepo $(SRC_OBJS) $@
 	@mkdir -p `dirname $(patsubst %.c, $(BINDIR)/%.out, $@)`
 	@echo "Linking $@..."
-	@$(CC) $(SRC_OBJS) $(CFLAGS) $@ -o $(patsubst %.c, $(BINDIR)/%.out, $@)
+	@$(CC) $@ $(SRC_OBJS) $(CFLAGS) -o $(patsubst %.c, $(BINDIR)/%.out, $@)
 
 
 $(OBJDIR)/%.o: %.c
