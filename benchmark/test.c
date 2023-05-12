@@ -63,43 +63,15 @@ int main()
     // = nb*(nb-1) * 2 * ((ih - bs + 1) * (iw -bs + 1) * (1 + ov * bs * 3 * 3 + 1) + (ov * bs) * 10 + ov * 2 + (bs -1) * 5) + (nb-1)^2 * (ov * ov * 3 * 3 + 1) + (nb * nb -1) * ((ih -bs + 1)*(iw - bs + 1) * 3 + 2)
 
     // measure different input sizes with following fixed parameters
-    // TODO check if nb is valid for the selected images
-    /*
-    int nb = 30;
-    
-    int ov = bs / 6;
-    pixel_t tolerance = 0.3;
-    
-    image_t in2 = imread("data/internet/100KB.jpg");
-    image_t in3 = imread("data/internet/500KB.jpg");
-    image_t in4 = imread("data/internet/1MB.jpg");
-    image_t in5 = imread("data/internet/2.5MB.jpg");
-    image_t arr[] = {in2, in3, in4, in5};
-    FILE *fp1 = freopen("output/benchmark_in.csv", "w", stdout);
-    double flops1;
-    double r;
-    for (int i = 0; i < 4; i++)
-    {
-        image_t t = arr[i];
-        int ih = t.height;
-        int iw = t.width;
-        int bs = 35;
-        int n = t.width * t.height;
-        flops1 = flop_counter();
-        r = rdtsc(t, bs, nb, ov, tolerance);
-        // save flops,n,time (in seconds), cycles into the csv
-        printf("%d,%d,%lf,%lf\n", flops1, n, r / FREQUENCY, r);
-    }
-    fclose(fp1);
-    */
-    // new variant 
+    // measurements with different input sizes and fixed overlap and num. of blocks
     
     int num_blocks = 2;
     pixel_t tolerance = 0.3;
     int block_size;
-    FILE *fp_in = freopen("output/benchmark_in", "w", stdout);
+    /*
+    FILE *fp_in = freopen("output/benchmark_inputsize", "w", stdout);
     while(block_size < 4000){
-        image_t in = imread("data/floor_51.jpg"); // initial image
+        image_t in = imread("data/floor_26.jpg"); // initial image
         double ih = in.height;
         double iw = in.width;
         block_size = MIN(ih,iw)-1;
@@ -109,19 +81,17 @@ int main()
         printf("%lf,%d,%lf,%lf\n", flops, block_size, r / FREQUENCY, r);
         // printf("performance (F/C):%lf \n",flops/r);
         image_t out = image_quilting(in, block_size, num_blocks, block_size/2, tolerance);
-        imwrite(out, "data/floor_51.jpg");
+        imwrite(out, "data/floor_26.jpg");
 
     }
     fclose(fp_in);
-
-    
-
-
+    */
+   
 
     // measure different blocksizes
     image_t in2 = imread("data/floor.jpg");
-    int ih = in2.height;
-    int iw = in2.width;
+    int ih2 = in2.height;
+    int iw2 = in2.width;
     int nb = 30;
     FILE *fp2 = freopen("output/benchmark_blocksize", "w", stdout);
     double flops2;
@@ -130,15 +100,34 @@ int main()
     {
         int bs = i;
         int ov = bs / 6;
-        flops2 = flop_counter(nb,ih,iw,ov,bs);
+        flops2 = flop_counter(nb,ih2,iw2,ov,bs);
         r2 = rdtsc(in2, bs, nb, ov, tolerance);
         // save flops,blocksize, time (in seconds), cycles into the csv
         printf("%lf,%d,%lf,%lf\n", flops2, bs, r2 / FREQUENCY, r2);
     }
     fclose(fp2);
+    printf("finished blocksize test \n");
+
+    // measure different num of blocks
+    image_t in3 = imread("data/floor.jpg");
+    int ih3 = in3.height;
+    int iw3 = in3.width;
+    int bs = 35;
+    int ov = bs / 6;
+    FILE *fp3 = freopen("output/benchmark_numblocks", "w", stdout);
+    double flops3;
+    double r3;
+    for (int i = 5; i <= 40; i += 5)
+    {
+        flops3 = flop_counter(i,ih3,iw3,ov,bs);
+        r3 = rdtsc(in3, bs, i, ov, tolerance);
+        // save flops,number of blocks, time (in seconds), cycles into the csv
+        printf("%lf,%d,%lf,%lf\n", flops3, i, r3 / FREQUENCY, r3);
+    }
+    fclose(fp3);
     // image_t out = image_quilting(in, blocksize, num_blocks, overlap, tolerance);
     // imwrite(out, "data/out.jpg");
-    
+    printf("finished num of blocks test \n");
 }
 
 // gcc -O3 -mfma -fno-tree-vectorize -ffp-contract=fast test.c src/timing.c src/image_quilting.c src/dpcut.c src/imageio.c src/L2norm.c -o benchmark -lm
