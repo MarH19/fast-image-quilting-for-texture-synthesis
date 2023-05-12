@@ -6,21 +6,22 @@
 
 void test_find_singleton()
 {
-    pixel_t errors[] = {1.0};
-    coord xy = find(errors, 1, 1, 100.0);
+    pixel_t errors[] = {1};
+    coord xy = find(errors, 1, 1, 100, 1);
     TEST_CHECK(xy.row == 0 && xy.col == 0);
 }
 
 void test_find_tolerance()
 {
     pixel_t errors[] = {
-        10.0, 20.0, 30.0,
-        40.0, 50.0, 60.0,
-        70.0, 80.0, 12.0};
+        10, 20, 30,
+        40, 50, 60,
+        70, 80, 12};
     coord c;
     int pos0, pos8;
-    for (int i = 0; i < 10; i++) {
-        c = find(errors, 3, 3, 0.3);
+    for (int i = 0; i < 10; i++)
+    {
+        c = find(errors, 3, 3, 3, 10);
         pos0 = (c.row == 0 && c.col == 0);
         pos8 = (c.row == 2 && c.col == 2);
         TEST_CHECK(pos0 || pos8);

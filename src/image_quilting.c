@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <limits.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,11 +21,11 @@ void calc_errors(image_t in, int blocksize, slice_t in_slice, slice_t out_slice,
             for (int j = 0; j < in.width - blocksize + 1; j++)
             {
                 in_slice.data = in.data + in_slice.jumpsize * i + j * in_slice.channels;
-                errors[i * error_jumpsize + j] += l2norm(in_slice, out_slice); 
+                errors[i * error_jumpsize + j] += l2norm(in_slice, out_slice);
             }
         }
     }
-    else  // the  operation is minus (-)
+    else // the  operation is minus (-)
     {
         for (int i = 0; i < in.height - blocksize + 1; i++)
         {
@@ -41,9 +42,9 @@ void calc_errors(image_t in, int blocksize, slice_t in_slice, slice_t out_slice,
 The function find finds the coordinates of a candidate block that is within a certain range (specified by tolerance)
 from the best fitting block
  */
-coord find(pixel_t *errors, int height, int width, pixel_t tolerance)
+coord find(pixel_t *errors, int height, int width, pixel_t tol_nom, pixel_t tol_den)
 {
-    pixel_t min_error = INFINITY;
+    pixel_t min_error = UINT_MAX;
 
     // search for the minimum error in the errors array and store it in a variable.
     for (int i = 0; i < height; i++)
@@ -52,7 +53,7 @@ coord find(pixel_t *errors, int height, int width, pixel_t tolerance)
                 min_error = errors[i * width + j];
 
     // Count how many canditates exist in order to know the size of the array of candidates
-    pixel_t tol_range = (1.0 + tolerance) * min_error;
+    pixel_t tol_range = min_error + (min_error / tol_den) * tol_nom;
     int nr_candidates = 0;
     for (int i = 0; i < height; i++)
     {
@@ -94,11 +95,11 @@ coord find(pixel_t *errors, int height, int width, pixel_t tolerance)
 // nb = n_blocks, ih = in_height, iw = in_width, ov = overlap, bs = blocksize
 // = nb*(nb-1) * 2 * ((ih - bs + 1) * (iw -bs + 1) * (1 + ov * bs * 3 * 3 + 1) + (ov * bs) * 10 + ov * 2 + (bs -1) * 5) + (nb-1)^2 * (ov * ov * 3 * 3 + 1) + (nb * nb -1) * ((ih -bs + 1)*(iw - bs + 1) * 3 + 2)
 
-image_t image_quilting(image_t in, int blocksize, int num_blocks, int overlap, pixel_t tolerance)
+image_t image_quilting(image_t in, int blocksize, int num_blocks, int overlap, pixel_t tol_nom, pixel_t tol_den)
 {
     int out_size = num_blocks * blocksize - (num_blocks - 1) * overlap;
     int n = out_size * out_size * 3;
-    double *out_image = (double *)calloc(n, sizeof(double));
+    pixel_t *out_image = (pixel_t *)calloc(n, sizeof(pixel_t));
     assert(out_image);
     image_t out = {out_image, out_size, out_size, 3};
     int errorlen = (in.height - blocksize + 1) * (in.width - blocksize + 1) * sizeof(pixel_t);
@@ -145,7 +146,7 @@ image_t image_quilting(image_t in, int blocksize, int num_blocks, int overlap, p
                 calc_errors(in, blocksize, in_slice, out_slice, errors, 0);
             }
             // Search for a random candidate block among the best matching blocks (determined by the tolerance)
-            coord random_candidate = find(errors, in.height - blocksize + 1, in.width - blocksize + 1, tolerance);
+            coord random_candidate = find(errors, in.height - blocksize + 1, in.width - blocksize + 1, tol_nom, tol_den);
             int rand_row = random_candidate.row;
             int rand_col = random_candidate.col;
 

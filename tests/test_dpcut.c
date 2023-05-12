@@ -1,9 +1,9 @@
 #include "acutest.h"
 #include "image_quilting.h"
 // only use this readonly (there is no way to express this in C)
-static pixel_t data1[] = {7.0, 6.0, 1.0, 0.0, 0.0, 3.0, 4.0, 2.0, 2.0, 8.0, 8.0, 8.0, 2.0, 3.0, 1.0};
-static pixel_t data2[] = {5.0, 7.0, 4.0, 1.0, 3.0, 0.0, 2.0, 1.0, 4.0, 5.0, 7.0, 6.0, 0.0, 0.0, 0.0};
-static pixel_t exp_res[] = {7.0, 7.0, 4.0, 1.0, 3.0, 0.0, 4.0, 1.0, 4.0, 8.0, 7.0, 6.0, 2.0, 3.0, 0.0};
+static pixel_t data1[] = {7, 6, 1, 0, 0, 3, 4, 2, 2, 8, 8, 8, 2, 3, 1};
+static pixel_t data2[] = {5, 7, 4, 1, 3, 0, 2, 1, 4, 5, 7, 6, 0, 0, 0};
+static pixel_t exp_res[] = {7, 7, 4, 1, 3, 0, 4, 1, 4, 8, 7, 6, 2, 3, 0};
 static const int size = sizeof(data1) / sizeof(pixel_t);
 static const int width = 3;
 static const int height = size / width;
@@ -29,9 +29,9 @@ void test_dpcut_normal()
     dpcut(s1, s2, out, 0);
     for (int i = 0; i < size; i++)
     {
-        if (!TEST_CHECK(IS_CLOSE(res[i], exp_res[i])))
+        if (!TEST_CHECK(res[i] == exp_res[i]))
             TEST_MSG(
-                "index %i, expected %e, got %e, diff %e\n",
+                "index %d, expected %u, got %u, diff %d\n",
                 i, exp_res[i], res[i], res[i] - exp_res[i]);
     }
 }
@@ -55,9 +55,9 @@ void test_dpcut_transpose()
     dpcut(ts1, ts2, out, 1);
     for (int i = 0; i < size; i++)
     {
-        if (!TEST_CHECK(IS_CLOSE(res[i], texp_res[i])))
+        if (!TEST_CHECK(res[i] == texp_res[i]))
             TEST_MSG(
-                "index %i, expected %e, got %e, diff %e\n",
+                "index %i, expected %u, got %u, diff %d\n",
                 i, texp_res[i], res[i], res[i] - texp_res[i]);
     }
 }
@@ -72,13 +72,13 @@ void test_dpcut_channels()
         {
             cdata1[i * (3 * width) + j * 3 + 0] = data1[i * width + j];
             cdata1[i * (3 * width) + j * 3 + 1] = data1[i * width + j];
-            cdata1[i * (3 * width) + j * 3 + 2] = 0.0;
+            cdata1[i * (3 * width) + j * 3 + 2] = 0;
             cdata2[i * (3 * width) + j * 3 + 0] = data2[i * width + j];
             cdata2[i * (3 * width) + j * 3 + 1] = data2[i * width + j];
-            cdata2[i * (3 * width) + j * 3 + 2] = 0.0;
+            cdata2[i * (3 * width) + j * 3 + 2] = 0;
             cexp_res[i * (3 * width) + j * 3 + 0] = exp_res[i * width + j];
             cexp_res[i * (3 * width) + j * 3 + 1] = exp_res[i * width + j];
-            cexp_res[i * (3 * width) + j * 3 + 2] = 0.0;
+            cexp_res[i * (3 * width) + j * 3 + 2] = 0;
         }
 
     slice_t ts1 = {cdata1, width, height, 3, width * 3};
@@ -86,9 +86,9 @@ void test_dpcut_channels()
     slice_t out = {res, width, height, 3, width * 3};
     dpcut(ts1, ts2, out, 0);
     for (int i = 0; i < 3 * size; i++)
-        if (!TEST_CHECK(IS_CLOSE(res[i], cexp_res[i])))
+        if (!TEST_CHECK(res[i] == cexp_res[i]))
             TEST_MSG(
-                "index %i, expected %e, got %e, diff %e\n",
+                "index %i, expected %u, got %u, diff %d\n",
                 i, cexp_res[i], res[i], res[i] - cexp_res[i]);
 }
 
