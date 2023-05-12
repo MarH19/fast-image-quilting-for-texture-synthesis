@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -60,7 +61,7 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int left2right)
     //  do backtracking while filling out slice
     // find the min element in the last row of the dp table
     int previdx = 0;
-    pixel_t prevval = INT_MAX;
+    pixel_t prevval = UINT_MAX;
     for (int i = 0; i < width; i++)
     {
         pixel_t temp_min = dp[(height - 1) * width + i];
@@ -127,7 +128,8 @@ static void calc_errors(slice_t s1, slice_t s2, pixel_t *errors)
             {
                 int idx1 = i * s1.jumpsize + j * s1.channels + c;
                 int idx2 = i * s2.jumpsize + j * s2.channels + c;
-                error += pow(s1.data[idx1] - s2.data[idx2], 2);
+                int diff = s1.data[idx1] - s2.data[idx2];
+                error = error + diff * diff;
             }
             errors[i * s1.width + j] = error;
         }

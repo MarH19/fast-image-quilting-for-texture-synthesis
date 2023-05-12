@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <limits.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,7 +44,7 @@ from the best fitting block
  */
 coord find(pixel_t *errors, int height, int width, pixel_t tol_nom, pixel_t tol_den)
 {
-    pixel_t min_error = INT_MAX;
+    pixel_t min_error = UINT_MAX;
 
     // search for the minimum error in the errors array and store it in a variable.
     for (int i = 0; i < height; i++)

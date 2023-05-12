@@ -1,6 +1,8 @@
+#include <stdint.h>
+
 #ifndef IMAGE_QUILTING_HEADER
 #define IMAGE_QUILTING_HEADER
-typedef int pixel_t;
+typedef uint32_t pixel_t;
 
 typedef struct
 {
@@ -58,7 +60,5 @@ coord find(pixel_t *errors, int height, int width, pixel_t tol_nom, pixel_t tol_
 #endif
 
 #define IS_CLOSE(a, b) (ABS(a - b) <= MAX(REL_TOL * MAX(ABS(a), ABS(b)), ABS_TOL))
-
-#define INT_MAX 2147483647
 
 #endif /* #ifndef IMAGE_QUILTING_HEADER */

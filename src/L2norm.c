@@ -15,8 +15,8 @@ pixel_t l2norm(slice_t s1, slice_t s2)
         {
             pixel_t s1_data = s1.data[i * s1.jumpsize + j];
             pixel_t s2_data = s2.data[i * s2.jumpsize + j];
-
-            error += pow(s1_data - s2_data, 2);
+            int diff = s1_data - s2_data;
+            error += diff * diff;
         }
     }
     return error;
