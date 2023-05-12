@@ -14,7 +14,7 @@
 #define CALIBRATE
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
-double rdtsc(image_t in, int blocksize, int num_blocks, int overlap, pixel_t tolerance)
+double rdtsc(image_t in, int blocksize, int num_blocks, int overlap, pixel_t nom, pixel_t denom)
 {
     int i, num_runs;
     myInt64 cycles;
@@ -26,7 +26,7 @@ double rdtsc(image_t in, int blocksize, int num_blocks, int overlap, pixel_t tol
         start = start_tsc();
         for (i = 0; i < num_runs; ++i)
         {
-            image_quilting(in, blocksize, num_blocks, overlap, tolerance);
+            image_quilting(in, blocksize, num_blocks, overlap, nom, denom);
         }
         cycles = stop_tsc(start);
 
@@ -40,7 +40,7 @@ double rdtsc(image_t in, int blocksize, int num_blocks, int overlap, pixel_t tol
     start = start_tsc();
     for (i = 0; i < num_runs; ++i)
     {
-        image_quilting(in, blocksize, num_blocks, overlap, tolerance);
+        image_quilting(in, blocksize, num_blocks, overlap, nom, denom);
     }
 
     cycles = stop_tsc(start) / num_runs;
@@ -64,9 +64,9 @@ int main()
 
     // measure different input sizes with following fixed parameters
     // measurements with different input sizes and fixed overlap and num. of blocks
-    
+    pixel_t nom   = 3;
+    pixel_t denom = 10;
     int num_blocks = 2;
-    pixel_t tolerance = 0.3;
     int block_size;
     /*
     FILE *fp_in = freopen("output/benchmark_inputsize", "w", stdout);
@@ -101,7 +101,7 @@ int main()
         int bs = i;
         int ov = bs / 6;
         flops2 = flop_counter(nb,ih2,iw2,ov,bs);
-        r2 = rdtsc(in2, bs, nb, ov, tolerance);
+        r2 = rdtsc(in2, bs, nb, ov, nom, denom);
         // save flops,blocksize, time (in seconds), cycles into the csv
         printf("%lf,%d,%lf,%lf\n", flops2, bs, r2 / FREQUENCY, r2);
     }
@@ -120,7 +120,7 @@ int main()
     for (int i = 5; i <= 40; i += 5)
     {
         flops3 = flop_counter(i,ih3,iw3,ov,bs);
-        r3 = rdtsc(in3, bs, i, ov, tolerance);
+        r3 = rdtsc(in3, bs, i, ov, nom, denom);
         // save flops,number of blocks, time (in seconds), cycles into the csv
         printf("%lf,%d,%lf,%lf\n", flops3, i, r3 / FREQUENCY, r3);
     }
