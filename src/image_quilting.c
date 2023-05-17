@@ -9,6 +9,66 @@
 Calculates the error between the slice of an input block (i.e., for each block of the input image) and the slice of
 a fixed output block
 */
+void calc_errors_(image_t in_, image_t out_, int row_out, int col_out, int blocksize, int overlap, pixel_t *errors)
+{
+    int error_height = in_.height - blocksize + 1;
+    int error_width = in_.width - blocksize + 1;
+    pixel_t *in = in_.data;
+    pixel_t *out = out_.data;
+    /* calculate jumpsize aka stride */
+    int inj = in_.channels * in_.width;
+    int outj = out_.channels * out_.width;
+    pixel_t error1, error2, error3;
+    // one diff per subblock and color
+    pixel_t diff11, diff12, diff13;
+    pixel_t diff21, diff22, diff23;
+    pixel_t diff31, diff32, diff33;
+
+    /* iterate over all possible blocks */
+    for (int i = 0; i < error_height; i++)
+    {
+        for (int j = 0; j < error_width; j++)
+        {
+            error1 = error2 = error3 = 0;
+
+            /* we have 3 different subblocks
+             *  1 2 2
+             *  3 . .
+             *  3 . .
+             */
+            /* I use a variant where I can calculate all three with two loops */
+            for (int k = 0; k < overlap; k++)
+            {
+                for (int m = 0; m < (blocksize - overlap); m++)
+                {
+                    if (m < overlap) // subblock 1
+                    {
+                        diff11 = in[(i + k) * inj + (j + m) * 3 + 0] - out[(row_out + k) * outj + (col_out + m) * 3 + 0];
+                        diff12 = in[(i + k) * inj + (j + m) * 3 + 1] - out[(row_out + k) * outj + (col_out + m) * 3 + 1];
+                        diff13 = in[(i + k) * inj + (j + m) * 3 + 2] - out[(row_out + k) * outj + (col_out + m) * 3 + 2];
+                        error1 = error1 + diff11 * diff11 + diff12 * diff12 + diff13 * diff13;
+                    }
+                    if (col_out != 0) // subblock 2
+                    {
+                        diff21 = in[(i + k) * inj + (j + m + overlap) * 3 + 0] - out[(row_out + k) * outj + (col_out + m + overlap) * 3 + 0];
+                        diff22 = in[(i + k) * inj + (j + m + overlap) * 3 + 1] - out[(row_out + k) * outj + (col_out + m + overlap) * 3 + 1];
+                        diff23 = in[(i + k) * inj + (j + m + overlap) * 3 + 2] - out[(row_out + k) * outj + (col_out + m + overlap) * 3 + 2];
+                        error2 = error2 + diff21 * diff21 + diff22 * diff22 + diff23 * diff23;
+                    }
+                    if (row_out != 0) // subblock 3
+                    {
+                        diff31 = in[(i + m + overlap) * inj + (j + k) * 3 + 0] - out[(row_out + m + overlap) * outj + (col_out + k) * 3 + 0];
+                        diff32 = in[(i + m + overlap) * inj + (j + k) * 3 + 1] - out[(row_out + m + overlap) * outj + (col_out + k) * 3 + 1];
+                        diff33 = in[(i + m + overlap) * inj + (j + k) * 3 + 2] - out[(row_out + m + overlap) * outj + (col_out + k) * 3 + 2];
+                        error3 = error3 + diff31 * diff31 + diff32 * diff32 + diff33 * diff33;
+                    }
+                }
+            }
+            errors[i * error_width + j] = error1 + error2 + error3;
+        }
+    }
+}
+
 void calc_errors(image_t in, int blocksize, slice_t in_slice, slice_t out_slice, pixel_t *errors, int add)
 {
     int error_jumpsize = in.width - blocksize + 1;
@@ -37,6 +97,22 @@ void calc_errors(image_t in, int blocksize, slice_t in_slice, slice_t out_slice,
     }
 }
 
+pixel_t l2norm(slice_t s1, slice_t s2)
+{
+    pixel_t error = 0;
+    for (int i = 0; i < s1.height; i++)
+    {
+        for (int j = 0; j < s1.channels * s1.width; j++)
+        {
+            pixel_t s1_data = s1.data[i * s1.jumpsize + j];
+            pixel_t s2_data = s2.data[i * s2.jumpsize + j];
+            int diff = s1_data - s2_data;
+            error += diff * diff;
+        }
+    }
+    return error;
+}
+
 /*
 The function find finds the coordinates of a candidate block that is within a certain range (specified by tolerance)
 from the best fitting block
@@ -52,18 +128,12 @@ coord find(pixel_t *errors, int height, int width, pixel_t tol_nom, pixel_t tol_
                 min_error = errors[i * width + j];
 
     // Count how many canditates exist in order to know the size of the array of candidates
-    pixel_t tol_range = min_error + (min_error / tol_den) * tol_nom;
+    pixel_t tol_range = min_error + (min_error * tol_nom) / tol_den;
     int nr_candidates = 0;
     for (int i = 0; i < height; i++)
-    {
         for (int j = 0; j < width; j++)
-        {
             if (errors[i * width + j] <= tol_range)
-            {
                 nr_candidates++;
-            }
-        }
-    }
 
     // Create the array with candidates and populate it with
     coord candidates[nr_candidates];
@@ -125,30 +195,11 @@ image_t image_quilting(image_t in, int blocksize, int num_blocks, int overlap, p
                 slice_cpy(in_block, out_block);
                 continue;
             }
-            if (row != 0) // safe to check top
-            {
-                slice_t out_slice = slice_image(out, si, sj, si + overlap, sj + blocksize);
-                slice_t in_slice = slice_image(in, 0, 0, overlap, blocksize);
-                calc_errors(in, blocksize, in_slice, out_slice, errors, 1);
-            }
-
-            if (col != 0) // safe to check left
-            {
-                slice_t out_slice = slice_image(out, si, sj, si + blocksize, sj + overlap);
-                slice_t in_slice = slice_image(in, 0, 0, blocksize, overlap);
-                calc_errors(in, blocksize, in_slice, out_slice, errors, 1);
-            }
-            if (col != 0 && row != 0) // overlap so remove common
-            {
-                slice_t out_slice = slice_image(out, si, sj, si + overlap, sj + overlap);
-                slice_t in_slice = slice_image(in, 0, 0, overlap, overlap);
-                calc_errors(in, blocksize, in_slice, out_slice, errors, 0);
-            }
+            calc_errors_(in, out, si, sj, blocksize, overlap, errors);
             // Search for a random candidate block among the best matching blocks (determined by the tolerance)
             coord random_candidate = find(errors, in.height - blocksize + 1, in.width - blocksize + 1, tol_nom, tol_den);
             int rand_row = random_candidate.row;
             int rand_col = random_candidate.col;
-
             if (row == 0)
             {
                 slice_t out_block = slice_image(out, si, sj + overlap, si + blocksize, sj + blocksize);
