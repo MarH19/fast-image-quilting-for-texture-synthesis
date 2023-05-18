@@ -5,8 +5,107 @@
 #include <string.h>
 #include "image_quilting.h"
 
+#define INTEGRAL(start, height, width, jumpsize) integral[start + height * jumpsize + width] - integral[start + width] - integral[start + height * jumpsize] + integral[start]
+
+/*
+orow: output row
+ocol: output col
+lrow: left predecessor row
+lcol: left predecessor col
+arow: above predecessor row
+acol: above predecessor col
+*/
+void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, pixel_t *errors, pixel_t *integral, int lrow, int lcol, int arow, int acol, int blocksize, int overlap, int num_blocks)
+{
+    int error_width = in_.width - blocksize + 1;
+    int error_height = in_.height - blocksize + 1;
+    int integral_width = in_.width + 1;
+    int integral_height = in_.height + 1;
+    pixel_t *in = in_.data;
+    pixel_t *out = out_.data;
+    int ijump = in_.channels * in_.width;
+    int ojump = out_.channels * out_.width;
+    pixel_t error0, error1, error2, error3;
+    pixel_t diff0r, diff0g, diff0b;
+    pixel_t diff1r, diff1g, diff1b;
+    pixel_t diff2r, diff2g, diff2b;
+    pixel_t diff3r, diff3g, diff3b;
 
 
+    int block1_in_integral_base = overlap;
+    int block3_in_integral_base = overlap * integral_width;
+
+    int height1 = overlap;
+    int width1 = blocksize - 2 * overlap;
+
+    int height3 = blocksize - overlap;
+    int width3 = overlap;
+
+    /* we got 4 subblocks to calculate
+     * 0 1 2
+     * 3 . .
+     * 3 . .
+     */
+    // precalculation for block 1
+    int block1_out_integral_start = (arow + blocksize - overlap) * integral_width + acol + overlap;
+    pixel_t block1_out_integral = INTEGRAL(block1_out_integral_start, height1, width1, integral_width);
+    // precalculation for block 3
+    int block3_out_integral_start = (lrow + overlap) * integral_width + lcol + (blocksize - overlap);
+    pixel_t block3_out_integral = INTEGRAL(block3_out_integral_start, height3, width3, integral_width);
+
+    for (int irow = 0; irow < error_height; irow++)
+    {
+        for (int icol = 0; icol < error_width; icol++)
+        {
+            error0 = error1 = error2 = error3 = 0;
+            /* calculation of block 1 integral part in-variant */
+            int block1_in_integral_start = block1_in_integral_base + irow * integral_width + icol;
+            pixel_t block1_in_integral = INTEGRAL(block1_in_integral_start, height1, width1, integral_width);
+
+            int block3_in_integral_start = block3_in_integral_base + irow * integral_width + icol;
+            pixel_t block3_in_integral = INTEGRAL(block3_in_integral_start, height3, width3, integral_width);
+
+            for (int k = 0; k < overlap; k++)
+            {
+                for (int m = 0; m < (blocksize - overlap); m++)
+                {
+                    // block 0 -> l2norm
+                    if (m < overlap)
+                    {
+                        diff0r = in[(irow + k) * ijump + (icol + m) * 3 + 0] - out[(orow + k) * ojump + (ocol + m) * 3 + 0];
+                        diff0g = in[(irow + k) * ijump + (icol + m) * 3 + 1] - out[(orow + k) * ojump + (ocol + m) * 3 + 1];
+                        diff0b = in[(irow + k) * ijump + (icol + m) * 3 + 2] - out[(orow + k) * ojump + (ocol + m) * 3 + 2];
+                        error0 = error0 + diff0r * diff0r + diff0g * diff0g + diff0b * diff0b;
+                    }
+                    // block 1 -> mul_sum
+                    if (m < blocksize - 2*overlap)
+                    {
+                        diff1r = in[(irow + k) * ijump + (icol + m + overlap) * 3 + 0] * in[(arow + (blocksize - overlap) + k) * ijump + (acol + m + overlap) * 3 + 0];
+                        diff1g = in[(irow + k) * ijump + (icol + m + overlap) * 3 + 1] * in[(arow + (blocksize - overlap) + k) * ijump + (acol + m + overlap) * 3 + 1];
+                        diff1b = in[(irow + k) * ijump + (icol + m + overlap) * 3 + 2] * in[(arow + (blocksize - overlap) + k) * ijump + (acol + m + overlap) * 3 + 2];
+                        error1 = error1 + diff1r + diff1g + diff1b;
+                    }
+                    // block 2 -> l2norm
+                    if (m < overlap)
+                    {
+                        diff2r = in[(irow + k) * ijump + (icol + m + blocksize - overlap) * 3 + 0] - out[(orow + k) * ojump + (ocol + m + blocksize - overlap) * 3 + 0];
+                        diff2g = in[(irow + k) * ijump + (icol + m + blocksize - overlap) * 3 + 1] - out[(orow + k) * ojump + (ocol + m + blocksize - overlap) * 3 + 1];
+                        diff2b = in[(irow + k) * ijump + (icol + m + blocksize - overlap) * 3 + 2] - out[(orow + k) * ojump + (ocol + m + blocksize - overlap) * 3 + 2];
+                        error2 = error2 + diff2r * diff2r + diff2g * diff2g + diff2b * diff2b;
+                    }
+                    // block 3 -> mul_sum
+                    diff3r = in[(irow + m + overlap) * ijump + (icol + k) * 3 + 0] * in[(lrow + overlap + m) * ijump + (lcol + blocksize - overlap + k) * 3 + 0];
+                    diff3g = in[(irow + m + overlap) * ijump + (icol + k) * 3 + 1] * in[(lrow + overlap + m) * ijump + (lcol + blocksize - overlap + k) * 3 + 1];
+                    diff3b = in[(irow + m + overlap) * ijump + (icol + k) * 3 + 2] * in[(lrow + overlap + m) * ijump + (lcol + blocksize - overlap + k) * 3 + 2];
+                    error3 = error3 + diff3r + diff3g + diff3b;
+                }
+            }
+            errors[irow * error_width + icol] = error0 + error2
+                                               + block1_out_integral - 2 * error1 + block1_in_integral
+                                               + block3_out_integral - 2 * error3 + block3_in_integral;
+        }
+    }
+}
 
 /* Here the integral image of the input image is calculated, where the left and upper border consists of zeros to facilitate the calculation of the integral */
 void generate_integral_image(image_t in, pixel_t *s2)
@@ -19,10 +118,10 @@ void generate_integral_image(image_t in, pixel_t *s2)
     {
         for (int j = 1; j < in.width + 1; j++)
         {
-            //printf("i: %d, j: %d\n", i, j);
+            // printf("i: %d, j: %d\n", i, j);
             s2[i * s2_jumpsize + j] = s2[i * s2_jumpsize + j - 1] + s2[(i - 1) * s2_jumpsize + j] - s2[(i - 1) * s2_jumpsize + j - 1] + in.data[(i - 1) * in_jumpsize + in.channels * j - 3] * in.data[(i - 1) * in_jumpsize + in.channels * j - 3] +
-                                      in.data[(i - 1) * in_jumpsize + in.channels * j-2] * in.data[(i - 1) * in_jumpsize + in.channels * j-2] +
-                                      in.data[(i - 1) * in_jumpsize + in.channels * j-1] * in.data[(i - 1) * in_jumpsize + in.channels * j-1];
+                                      in.data[(i - 1) * in_jumpsize + in.channels * j - 2] * in.data[(i - 1) * in_jumpsize + in.channels * j - 2] +
+                                      in.data[(i - 1) * in_jumpsize + in.channels * j - 1] * in.data[(i - 1) * in_jumpsize + in.channels * j - 1];
 
             /*
             printf("out: %d, left: %d, top: %d, angle: %d, p1: %d, p2: %d, p3: %d\n",s2[i * s2_jumpsize + j], s2[i * s2_jumpsize + j - 1], s2[(i - 1) * s2_jumpsize + j], s2[(i - 1) * s2_jumpsize + j - 1],
@@ -142,26 +241,18 @@ void integral_sum(image_t in, int blocksize, int overlap, slice_t in_slice, int 
 {
     // Compute the integral for the overlap region of the output block
     int integral_jumpsize = in.width + 1;
-    pixel_t out_integral = integral[out_integral_start + out_slice.height * integral_jumpsize + out_slice.width] 
-                            - integral[out_integral_start + out_slice.width] 
-                            - integral[out_integral_start + out_slice.height * integral_jumpsize] 
-                            + integral[out_integral_start];
+    pixel_t out_integral = integral[out_integral_start + out_slice.height * integral_jumpsize + out_slice.width] - integral[out_integral_start + out_slice.width] - integral[out_integral_start + out_slice.height * integral_jumpsize] + integral[out_integral_start];
 
-    
     int error_jumpsize = in.width - blocksize + 1;
     pixel_t *in_slice_start = in_slice.data;
 
     for (int i = 0; i < in.height - blocksize + 1; i++)
     {
         for (int j = 0; j < in.width - blocksize + 1; j++)
-        {   
+        {
             // Compute integral for the overlap region of the input block(s)
-            int new_start = in_integral_start + i*integral_jumpsize + j;
-            pixel_t in_integral = integral[new_start + in_slice.height * integral_jumpsize + in_slice.width] 
-                            - integral[new_start + in_slice.width] 
-                            - integral[new_start + in_slice.height * integral_jumpsize] 
-                            + integral[new_start];
-
+            int new_start = in_integral_start + i * integral_jumpsize + j;
+            pixel_t in_integral = integral[new_start + in_slice.height * integral_jumpsize + in_slice.width] - integral[new_start + in_slice.width] - integral[new_start + in_slice.height * integral_jumpsize] + integral[new_start];
 
             in_slice.data = in_slice_start + in_slice.jumpsize * i + j * in_slice.channels;
             // Calculate (a part of) the overlap error for an input block
@@ -169,9 +260,6 @@ void integral_sum(image_t in, int blocksize, int overlap, slice_t in_slice, int 
         }
     }
 }
-
-
-
 
 // Command to compile the code:   gcc dpcut.c imageio.c L2norm.c  -o imageio -lm
 // (n_blocks)(n_blocks-1) * 2 * (flops(calcerrors) + flops(dpcut)) + (n_blocks-1)^2 * flops(calcerrors) + (n_blocks^2-1) * find
@@ -198,7 +286,7 @@ image_t image_quilting(image_t in, int blocksize, int num_blocks, int overlap, p
     // Precompute the integral image
     generate_integral_image(in, integral);
 
-    /* These arrays are needed to determine where in the input image the block above the one to be 
+    /* These arrays are needed to determine where in the input image the block above the one to be
        inserted in the output image comes from in order to calculate the integral */
     int *row_above_list = (int *)malloc(num_blocks * sizeof(int));
     assert(row_above_list);
@@ -208,12 +296,12 @@ image_t image_quilting(image_t in, int blocksize, int num_blocks, int overlap, p
     memset(row_above_list, 0, num_blocks * sizeof(int));
     memset(col_above_list, 0, num_blocks * sizeof(int));
 
-    /* Here we store the indices of the block that lies above the block we want to insert, 
+    /* Here we store the indices of the block that lies above the block we want to insert,
     so that we can find it in the input image and calculate the integral */
     int row_above = 0;
     int col_above = 0;
 
-    /* Here we store the indices of the block that is to the left of the block we want to insert, 
+    /* Here we store the indices of the block that is to the left of the block we want to insert,
     so that we can find it in the input image and calculate the integral */
     int row_left = 0;
     int col_left = 0;
@@ -221,7 +309,7 @@ image_t image_quilting(image_t in, int blocksize, int num_blocks, int overlap, p
     for (int row = 0; row < num_blocks; row++)
     {
         for (int col = 0; col < num_blocks; col++)
-        {   
+        {
 
             int si = row * (blocksize - overlap);
             int sj = col * (blocksize - overlap);
@@ -245,7 +333,7 @@ image_t image_quilting(image_t in, int blocksize, int num_blocks, int overlap, p
                 slice_cpy(in_block, out_block);
                 continue;
             }
-            /* In this case we consider the top row of the output image and the overlap 
+            /* In this case we consider the top row of the output image and the overlap
             error can be fully calculated using the formula that contains the integral image part */
             if (row == 0 && col != 0)
             {
@@ -270,16 +358,17 @@ image_t image_quilting(image_t in, int blocksize, int num_blocks, int overlap, p
                 integral_sum(in, blocksize, overlap, in_slice, in_integral_start, out_slice, out_integral_start, errors, integral);
 
                 // The top right square (of size overlap * overlap) of the upper overlap can be calculated using calc_errors
-                out_slice = slice_image(out, si, sj + (blocksize - overlap) ,si + overlap, sj + blocksize);
+                out_slice = slice_image(out, si, sj + (blocksize - overlap), si + overlap, sj + blocksize);
                 in_slice = slice_image(in, 0, blocksize - overlap, overlap, blocksize);
                 calc_errors(in, blocksize, in_slice, out_slice, errors, 1);
             }
             /* In this case we consider all blocks that are between the top row, the left column and the right column */
             if (row != 0 && col != 0 && col != num_blocks - 1)
-            {   
+            {
                 // The middle part of the upper overlap can be calculated using integral images
                 row_above = row_above_list[col];
                 col_above = col_above_list[col];
+                /*
                 slice_t out_slice = slice_image(in, row_above + (blocksize - overlap), col_above + overlap, row_above + blocksize, col_above + (blocksize - overlap));
                 slice_t in_slice = slice_image(in, 0, overlap, overlap, blocksize - overlap);
                 int integral_width = in.width + 1;
@@ -296,14 +385,16 @@ image_t image_quilting(image_t in, int blocksize, int num_blocks, int overlap, p
                 integral_sum(in, blocksize, overlap, in_slice, in_integral_start, out_slice, out_integral_start, errors, integral);
 
                 // The right square part of the upper overlap can be calculated using calc_errors
-                out_slice = slice_image(out, si, sj + (blocksize - overlap) ,si + overlap, sj + blocksize);
+                out_slice = slice_image(out, si, sj + (blocksize - overlap), si + overlap, sj + blocksize);
                 in_slice = slice_image(in, 0, blocksize - overlap, overlap, blocksize);
                 calc_errors(in, blocksize, in_slice, out_slice, errors, 1);
 
                 // The left square part of the upper overlap can be calculated using calc_errors
-                out_slice = slice_image(out, si, sj ,si + overlap, sj + overlap);
+                out_slice = slice_image(out, si, sj, si + overlap, sj + overlap);
                 in_slice = slice_image(in, 0, 0, overlap, overlap);
                 calc_errors(in, blocksize, in_slice, out_slice, errors, 1);
+                */
+                fill_error_matrix(in, out, si, sj, errors, integral, row_left, col_left, row_above, col_above, blocksize, overlap, num_blocks);
             }
             /* In this case we consider all blocks that are on the right column */
             if (row != 0 && col == num_blocks - 1)
@@ -327,7 +418,7 @@ image_t image_quilting(image_t in, int blocksize, int num_blocks, int overlap, p
                 integral_sum(in, blocksize, overlap, in_slice, in_integral_start, out_slice, out_integral_start, errors, integral);
 
                 // The left square of the upper overlap can be calculated using calc_errors
-                out_slice = slice_image(out, si, sj ,si + overlap, sj + overlap);
+                out_slice = slice_image(out, si, sj, si + overlap, sj + overlap);
                 in_slice = slice_image(in, 0, 0, overlap, overlap);
                 calc_errors(in, blocksize, in_slice, out_slice, errors, 1);
             }
