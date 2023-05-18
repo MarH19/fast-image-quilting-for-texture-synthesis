@@ -26,7 +26,7 @@ void calc_errors_(image_t in_, image_t out_, int row_out, int col_out, int block
 
     /* iterate over all possible blocks */
 
-    if (col_out == 0)
+    if (row_out == 0)
     {
         for (int i = 0; i < error_height; i++)
         {
@@ -61,7 +61,7 @@ void calc_errors_(image_t in_, image_t out_, int row_out, int col_out, int block
             }
         }
     }
-    else if (row_out == 0)
+    else if (col_out == 0)
     {
         for (int i = 0; i < error_height; i++)
         {
