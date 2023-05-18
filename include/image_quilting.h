@@ -1,8 +1,10 @@
 #include <stdint.h>
+#include <limits.h>
 
 #ifndef IMAGE_QUILTING_HEADER
 #define IMAGE_QUILTING_HEADER
-typedef uint32_t pixel_t;
+typedef int32_t pixel_t;
+#define PIXEL_T_MAX INT32_MAX
 
 typedef struct
 {
