@@ -42,15 +42,21 @@ void calc_errors_(image_t in_, image_t out_, int row_out, int col_out, int block
                 /* I use a variant where I can calculate all three with two loops */
                 for (int k = 0; k < overlap; k++)
                 {
-                    for (int m = 0; m < (blocksize - overlap); m++)
+                    int m;
+                    for (m = 0; m < overlap; m++)
                     {
-                        if (m < overlap) // subblock 1
-                        {
-                            diff11 = in[(i + k) * inj + (j + m) * 3 + 0] - out[(row_out + k) * outj + (col_out + m) * 3 + 0];
-                            diff12 = in[(i + k) * inj + (j + m) * 3 + 1] - out[(row_out + k) * outj + (col_out + m) * 3 + 1];
-                            diff13 = in[(i + k) * inj + (j + m) * 3 + 2] - out[(row_out + k) * outj + (col_out + m) * 3 + 2];
-                            error1 = error1 + diff11 * diff11 + diff12 * diff12 + diff13 * diff13;
-                        }
+                        diff11 = in[(i + k) * inj + (j + m) * 3 + 0] - out[(row_out + k) * outj + (col_out + m) * 3 + 0];
+                        diff12 = in[(i + k) * inj + (j + m) * 3 + 1] - out[(row_out + k) * outj + (col_out + m) * 3 + 1];
+                        diff13 = in[(i + k) * inj + (j + m) * 3 + 2] - out[(row_out + k) * outj + (col_out + m) * 3 + 2];
+                        error1 = error1 + diff11 * diff11 + diff12 * diff12 + diff13 * diff13;
+                        diff31 = in[(i + m + overlap) * inj + (j + k) * 3 + 0] - out[(row_out + m + overlap) * outj + (col_out + k) * 3 + 0];
+                        diff32 = in[(i + m + overlap) * inj + (j + k) * 3 + 1] - out[(row_out + m + overlap) * outj + (col_out + k) * 3 + 1];
+                        diff33 = in[(i + m + overlap) * inj + (j + k) * 3 + 2] - out[(row_out + m + overlap) * outj + (col_out + k) * 3 + 2];
+                        error3 = error3 + diff31 * diff31 + diff32 * diff32 + diff33 * diff33;
+
+                    }
+                    for (; m < (blocksize - overlap); m++)
+                    {
                         diff31 = in[(i + m + overlap) * inj + (j + k) * 3 + 0] - out[(row_out + m + overlap) * outj + (col_out + k) * 3 + 0];
                         diff32 = in[(i + m + overlap) * inj + (j + k) * 3 + 1] - out[(row_out + m + overlap) * outj + (col_out + k) * 3 + 1];
                         diff33 = in[(i + m + overlap) * inj + (j + k) * 3 + 2] - out[(row_out + m + overlap) * outj + (col_out + k) * 3 + 2];
@@ -77,15 +83,20 @@ void calc_errors_(image_t in_, image_t out_, int row_out, int col_out, int block
                 /* I use a variant where I can calculate all three with two loops */
                 for (int k = 0; k < overlap; k++)
                 {
-                    for (int m = 0; m < (blocksize - overlap); m++)
+                    int m;
+                    for (m = 0; m < overlap; m++)
                     {
-                        if (m < overlap) // subblock 1
-                        {
-                            diff11 = in[(i + k) * inj + (j + m) * 3 + 0] - out[(row_out + k) * outj + (col_out + m) * 3 + 0];
-                            diff12 = in[(i + k) * inj + (j + m) * 3 + 1] - out[(row_out + k) * outj + (col_out + m) * 3 + 1];
-                            diff13 = in[(i + k) * inj + (j + m) * 3 + 2] - out[(row_out + k) * outj + (col_out + m) * 3 + 2];
-                            error1 = error1 + diff11 * diff11 + diff12 * diff12 + diff13 * diff13;
-                        }
+                        diff11 = in[(i + k) * inj + (j + m) * 3 + 0] - out[(row_out + k) * outj + (col_out + m) * 3 + 0];
+                        diff12 = in[(i + k) * inj + (j + m) * 3 + 1] - out[(row_out + k) * outj + (col_out + m) * 3 + 1];
+                        diff13 = in[(i + k) * inj + (j + m) * 3 + 2] - out[(row_out + k) * outj + (col_out + m) * 3 + 2];
+                        error1 = error1 + diff11 * diff11 + diff12 * diff12 + diff13 * diff13;
+                        diff21 = in[(i + k) * inj + (j + m + overlap) * 3 + 0] - out[(row_out + k) * outj + (col_out + m + overlap) * 3 + 0];
+                        diff22 = in[(i + k) * inj + (j + m + overlap) * 3 + 1] - out[(row_out + k) * outj + (col_out + m + overlap) * 3 + 1];
+                        diff23 = in[(i + k) * inj + (j + m + overlap) * 3 + 2] - out[(row_out + k) * outj + (col_out + m + overlap) * 3 + 2];
+                        error2 = error2 + diff21 * diff21 + diff22 * diff22 + diff23 * diff23;
+                    }
+                    for (; m < blocksize - overlap ; m++)
+                    {
                         diff21 = in[(i + k) * inj + (j + m + overlap) * 3 + 0] - out[(row_out + k) * outj + (col_out + m + overlap) * 3 + 0];
                         diff22 = in[(i + k) * inj + (j + m + overlap) * 3 + 1] - out[(row_out + k) * outj + (col_out + m + overlap) * 3 + 1];
                         diff23 = in[(i + k) * inj + (j + m + overlap) * 3 + 2] - out[(row_out + k) * outj + (col_out + m + overlap) * 3 + 2];
@@ -112,7 +123,8 @@ void calc_errors_(image_t in_, image_t out_, int row_out, int col_out, int block
                 /* I use a variant where I can calculate all three with two loops */
                 for (int k = 0; k < overlap; k++)
                 {
-                    for (int m = 0; m < (blocksize - overlap); m++)
+                    int m;
+                    for (m = 0; m < overlap; m++)
                     {
                         if (m < overlap) // subblock 1
                         {
@@ -121,6 +133,17 @@ void calc_errors_(image_t in_, image_t out_, int row_out, int col_out, int block
                             diff13 = in[(i + k) * inj + (j + m) * 3 + 2] - out[(row_out + k) * outj + (col_out + m) * 3 + 2];
                             error1 = error1 + diff11 * diff11 + diff12 * diff12 + diff13 * diff13;
                         }
+                        diff21 = in[(i + k) * inj + (j + m + overlap) * 3 + 0] - out[(row_out + k) * outj + (col_out + m + overlap) * 3 + 0];
+                        diff22 = in[(i + k) * inj + (j + m + overlap) * 3 + 1] - out[(row_out + k) * outj + (col_out + m + overlap) * 3 + 1];
+                        diff23 = in[(i + k) * inj + (j + m + overlap) * 3 + 2] - out[(row_out + k) * outj + (col_out + m + overlap) * 3 + 2];
+                        error2 = error2 + diff21 * diff21 + diff22 * diff22 + diff23 * diff23;
+                        diff31 = in[(i + m + overlap) * inj + (j + k) * 3 + 0] - out[(row_out + m + overlap) * outj + (col_out + k) * 3 + 0];
+                        diff32 = in[(i + m + overlap) * inj + (j + k) * 3 + 1] - out[(row_out + m + overlap) * outj + (col_out + k) * 3 + 1];
+                        diff33 = in[(i + m + overlap) * inj + (j + k) * 3 + 2] - out[(row_out + m + overlap) * outj + (col_out + k) * 3 + 2];
+                        error3 = error3 + diff31 * diff31 + diff32 * diff32 + diff33 * diff33;
+                    }
+                    for (; m < blocksize - overlap; m++)
+                    {
                         diff21 = in[(i + k) * inj + (j + m + overlap) * 3 + 0] - out[(row_out + k) * outj + (col_out + m + overlap) * 3 + 0];
                         diff22 = in[(i + k) * inj + (j + m + overlap) * 3 + 1] - out[(row_out + k) * outj + (col_out + m + overlap) * 3 + 1];
                         diff23 = in[(i + k) * inj + (j + m + overlap) * 3 + 2] - out[(row_out + k) * outj + (col_out + m + overlap) * 3 + 2];
