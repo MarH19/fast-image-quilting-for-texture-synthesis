@@ -53,7 +53,7 @@ coord find(pixel_t *errors, int height, int width, pixel_t tol_nom, pixel_t tol_
 
     // Count how many canditates exist in order to know the size of the array of candidates
     pixel_t tol_range = min_error + (min_error / tol_den) * tol_nom;
-    int nr_candidates = 0;
+    /*int nr_candidates = 0;
     for (int i = 0; i < height; i++)
     {
         for (int j = 0; j < width; j++)
@@ -64,9 +64,9 @@ coord find(pixel_t *errors, int height, int width, pixel_t tol_nom, pixel_t tol_
             }
         }
     }
-
-    // Create the array with candidates and populate it with
-    coord candidates[nr_candidates];
+    */
+    // Create the array with maximum amount of possible candidates
+    coord candidates[height*width];
     int idx = 0;
     for (int i = 0; i < height; i++)
     {
@@ -81,7 +81,7 @@ coord find(pixel_t *errors, int height, int width, pixel_t tol_nom, pixel_t tol_
         }
     }
     // Choose randomly a candidate
-    int random_idx = rand() % nr_candidates;
+    int random_idx = rand() % idx;
     coord random_candidate = candidates[random_idx];
 
     // return coordinates of the random candidate
