@@ -64,7 +64,6 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, pixel_t *e
                         error3r += diff3r;
                         error3g += diff3g;
                         error3b += diff3b;
-                        // error3 = error3 + diff3r + diff3g + diff3b;
                     }
                 }
                 errors[irow * error_width + icol] = block3_out_integral - 2 * (error3r + error3g + error3b) + block3_in_integral;
@@ -168,7 +167,6 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, pixel_t *e
                         error0r += diff0r * diff0r;
                         error0g += diff0g * diff0g;
                         error0b += diff0b * diff0b;
-                        // error0 = error0 + diff0r * diff0r + diff0g * diff0g + diff0b * diff0b;
 
                         // block2 l2norm
                         diff2r = in[(irow + k) * ijump + (icol + m + blocksize - overlap) * 3 + 0] - out[(orow + k) * ojump + (ocol + m + blocksize - overlap) * 3 + 0];
@@ -177,7 +175,6 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, pixel_t *e
                         error2r += diff2r * diff2r;
                         error2g += diff2g * diff2g;
                         error2b += diff2b * diff2b;
-                        // error2 = error2 + diff2r * diff2r + diff2g * diff2g + diff2b * diff2b;
 
                         // block3 mul_sum part 1
                         diff3r = in[(irow + m + overlap) * ijump + (icol + k) * 3 + 0] * in[(lrow + overlap + m) * ijump + (lcol + blocksize - overlap + k) * 3 + 0];
@@ -186,7 +183,6 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, pixel_t *e
                         error3r += diff3r;
                         error3g += diff3g;
                         error3b += diff3b;
-                        // error3 = error3 + diff3r + diff3g + diff3b;
                     }
                     for (int m = 0; m < (blocksize - 2 * overlap); m++)
                     {
@@ -197,7 +193,6 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, pixel_t *e
                         error1r += diff1r;
                         error1g += diff1g;
                         error1b += diff1b;
-                        // error1 = error1 + diff1r + diff1g + diff1b;
 
                         // block 3 -> mul_sum part 2
                         diff3r = in[(irow + m + 2 * overlap) * ijump + (icol + k) * 3 + 0] * in[(lrow + 2 * overlap + m) * ijump + (lcol + blocksize - overlap + k) * 3 + 0];
@@ -206,7 +201,6 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, pixel_t *e
                         error3r += diff3r;
                         error3g += diff3g;
                         error3b += diff3b;
-                        // error3 = error3 + diff3r + diff3g + diff3b;
                     }
                 }
                 errors[irow * error_width + icol] = error0r + error0g + error0b + error2r + error2g + error2b + block1_out_integral - 2 * (error1r + error1g + error1b) + block1_in_integral + block3_out_integral - 2 * (error3r + error3g + error3b) + block3_in_integral;
@@ -285,19 +279,25 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, pixel_t *e
 }
 
 /* Here the integral image of the input image is calculated, where the left and upper border consists of zeros to facilitate the calculation of the integral */
-void generate_integral_image(image_t in, pixel_t *s2)
+void generate_integral_image(image_t in, pixel_t *out)
 {
-    int s2_jumpsize = in.width + 1;
-    int in_jumpsize = in.width * in.channels;
-
+    int outjump = in.width + 1;
+    assert(in.channels == 3);
+    int injump = in.width * 3;
+    for (int i = 0; i < in.height + 1; i++)
+        out[i*outjump] = 0;
+    for (int i = 0; i < outjump; i++)
+        out[i] = 0;
     for (int i = 1; i < in.height + 1; i++)
     {
         for (int j = 1; j < in.width + 1; j++)
         {
-            // printf("i: %d, j: %d\n", i, j);
-            s2[i * s2_jumpsize + j] = s2[i * s2_jumpsize + j - 1] + s2[(i - 1) * s2_jumpsize + j] - s2[(i - 1) * s2_jumpsize + j - 1] + in.data[(i - 1) * in_jumpsize + in.channels * j - 3] * in.data[(i - 1) * in_jumpsize + in.channels * j - 3] +
-                                      in.data[(i - 1) * in_jumpsize + in.channels * j - 2] * in.data[(i - 1) * in_jumpsize + in.channels * j - 2] +
-                                      in.data[(i - 1) * in_jumpsize + in.channels * j - 1] * in.data[(i - 1) * in_jumpsize + in.channels * j - 1];
+            pixel_t temp = out[i * outjump + j - 1] + out[(i - 1) * outjump + j] - out[(i - 1) * outjump + j - 1];
+            // offset -1 in row and col as we start with (1, 1) 
+            temp += in.data[(i - 1) * injump + 3 * j - 3] * in.data[(i - 1) * injump + 3 * j - 3];
+            temp += in.data[(i - 1) * injump + 3 * j - 2] * in.data[(i - 1) * injump + 3 * j - 2];
+            temp += in.data[(i - 1) * injump + 3 * j - 1] * in.data[(i - 1) * injump + 3 * j - 1];
+            out[i * outjump + j] = temp;
         }
     }
 }
@@ -317,7 +317,7 @@ coord find(pixel_t *errors, int height, int width, pixel_t tol_nom, pixel_t tol_
                 min_error = errors[i * width + j];
 
     // Count how many canditates exist in order to know the size of the array of candidates
-    pixel_t tol_range = min_error + (min_error / tol_den) * tol_nom;
+    pixel_t tol_range = min_error + (min_error * tol_nom) / tol_den;
     int nr_candidates = 0;
     for (int i = 0; i < height; i++)
     {
@@ -366,37 +366,28 @@ image_t image_quilting(image_t in, int blocksize, int num_blocks, int overlap, p
     pixel_t *out_image = (pixel_t *)calloc(n, sizeof(pixel_t));
     assert(out_image);
     image_t out = {out_image, out_size, out_size, 3};
-    int errorlen = (in.height - blocksize + 1) * (in.width - blocksize + 1) * sizeof(pixel_t);
-    pixel_t *errors = (pixel_t *)malloc(errorlen);
-    assert(errors);
+    int errorlen = (in.height - blocksize + 1) * (in.width - blocksize + 1);
+    pixel_t errors[errorlen];
 
-    // Initialize the integral image with size (in.width + 1) * (in.height + 1) in order to have later zeros on the left and upper border
-    pixel_t *integral = (pixel_t *)malloc((in.height + 1) * (in.width + 1) * sizeof(pixel_t));
-    assert(integral);
-    memset(integral, 0, (in.height + 1) * (in.width + 1) * sizeof(pixel_t));
+    // Integral image pads with 0 by 1 row and 1 col to simplify calculations
+    pixel_t integral[(in.height + 1) * (in.width + 1)];
 
-    // Precompute the integral image
     generate_integral_image(in, integral);
 
     /* These arrays are needed to determine where in the input image the block above the one to be
        inserted in the output image comes from in order to calculate the integral */
-    int *row_above_list = (int *)malloc(num_blocks * sizeof(int));
-    assert(row_above_list);
-    int *col_above_list = (int *)malloc(num_blocks * sizeof(int));
-    assert(col_above_list);
-
-    memset(row_above_list, 0, num_blocks * sizeof(int));
-    memset(col_above_list, 0, num_blocks * sizeof(int));
+    int row_above_list[num_blocks];
+    int col_above_list[num_blocks];
 
     /* Here we store the indices of the block that lies above the block we want to insert,
     so that we can find it in the input image and calculate the integral */
-    int row_above = 0;
-    int col_above = 0;
+    int row_above;
+    int col_above;
 
     /* Here we store the indices of the block that is to the left of the block we want to insert,
     so that we can find it in the input image and calculate the integral */
-    int row_left = 0;
-    int col_left = 0;
+    int row_left;
+    int col_left;
 
     for (int row = 0; row < num_blocks; row++)
     {
@@ -405,7 +396,6 @@ image_t image_quilting(image_t in, int blocksize, int num_blocks, int overlap, p
 
             int si = row * (blocksize - overlap);
             int sj = col * (blocksize - overlap);
-            memset(errors, 0, errorlen);
 
             // Very first case, so pick one at random
             if (row == 0 && col == 0)
@@ -475,10 +465,5 @@ image_t image_quilting(image_t in, int blocksize, int num_blocks, int overlap, p
             }
         }
     }
-    free(errors);
-    free(integral);
-    free(row_above_list);
-    free(col_above_list);
     return out;
 }
-// gcc dpcut.c imageio.c L2norm.c  -o imageio -lm
