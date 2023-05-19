@@ -61,12 +61,15 @@ void prepare_out_img(int rows[], int cols[])
             for (int k = 0; k < BLOCKSIZE; k++)
                 for (int m = 0; m < BLOCKSIZE * 3; m++)
                     out[(outrow + k) * (OUTSIZE * 3) + outcol * 3 + m] = in[(inrow + k) * (INSIZE * 3) + incol * 3 + m];
-            if (j == 0)
-                continue; // first col does not overlap bottom left
-            /* now havoc bottom left corner rest is not reused for calculations */
-            for (int k = BLOCKSIZE - OVERLAP; k < BLOCKSIZE; k++)
-                for (int m = 0; m < OVERLAP * 3; m++)
-                    out[(outrow + k) * (OUTSIZE * 3) + outcol * 3 + m] = rand() % 256;
+            if (j != 0)
+                for (int k = BLOCKSIZE - OVERLAP; k < BLOCKSIZE; k++)
+                    for (int m = 0; m < OVERLAP * 3; m++)
+                        out[(outrow + k) * (OUTSIZE * 3) + outcol * 3 + m] = rand() % 256;
+            if (i != 0)
+                for (int k = 0; k < OVERLAP; k++)
+                    for (int m = (BLOCKSIZE - OVERLAP) * 3; m < BLOCKSIZE * 3; m++)
+                        out[(outrow + k) * (OUTSIZE * 3) + outcol * 3 + m] = rand() % 256;
+
         }
     }
 }
