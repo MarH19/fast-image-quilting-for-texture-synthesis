@@ -13,7 +13,7 @@ $ make cleanall                # deletes all created files
 To build the benchmark run in a linux shell the following command.
 ```shell
 $ make benchmarks
-$ ./bin/benchmark/test.out  # runs benchmark tests
+$ ./bin/benchmarks/test.out  # runs benchmark tests
 $ make cleanall
 ```
 `make benchmarks` and `make tests` use different compiler flags to compile their binaries.
