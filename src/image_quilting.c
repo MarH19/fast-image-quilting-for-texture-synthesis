@@ -53,14 +53,14 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, pixel_t *e
                 int block3_in_integral_start = block3_in_integral_base + irow * integral_width + icol;
                 pixel_t block3_in_integral = INTEGRAL(block3_in_integral_start, height3, width3, integral_width);
 
-                for (int k = 0; k < overlap; k++)
+                for (int k = 0; k < blocksize; k++)
                 {
-                    for (int m = 0; m < blocksize; m++)
+                    for (int m = 0; m < overlap; m++)
                     {
                         // block3 mul_sum part 1
-                        diff3r = in[(irow + m) * ijump + (icol + k) * 3 + 0] * in[(lrow + m) * ijump + (lcol + blocksize - overlap + k) * 3 + 0];
-                        diff3g = in[(irow + m) * ijump + (icol + k) * 3 + 1] * in[(lrow + m) * ijump + (lcol + blocksize - overlap + k) * 3 + 1];
-                        diff3b = in[(irow + m) * ijump + (icol + k) * 3 + 2] * in[(lrow + m) * ijump + (lcol + blocksize - overlap + k) * 3 + 2];
+                        diff3r = in[(irow + k) * ijump + (icol + m) * 3 + 0] * in[(lrow + k) * ijump + (lcol + blocksize - overlap + m) * 3 + 0];
+                        diff3g = in[(irow + k) * ijump + (icol + m) * 3 + 1] * in[(lrow + k) * ijump + (lcol + blocksize - overlap + m) * 3 + 1];
+                        diff3b = in[(irow + k) * ijump + (icol + m) * 3 + 2] * in[(lrow + k) * ijump + (lcol + blocksize - overlap + m) * 3 + 2];
                         error3r += diff3r;
                         error3g += diff3g;
                         error3b += diff3b;
@@ -175,14 +175,6 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, pixel_t *e
                         error2r += diff2r * diff2r;
                         error2g += diff2g * diff2g;
                         error2b += diff2b * diff2b;
-
-                        // block3 mul_sum part 1
-                        diff3r = in[(irow + m + overlap) * ijump + (icol + k) * 3 + 0] * in[(lrow + overlap + m) * ijump + (lcol + blocksize - overlap + k) * 3 + 0];
-                        diff3g = in[(irow + m + overlap) * ijump + (icol + k) * 3 + 1] * in[(lrow + overlap + m) * ijump + (lcol + blocksize - overlap + k) * 3 + 1];
-                        diff3b = in[(irow + m + overlap) * ijump + (icol + k) * 3 + 2] * in[(lrow + overlap + m) * ijump + (lcol + blocksize - overlap + k) * 3 + 2];
-                        error3r += diff3r;
-                        error3g += diff3g;
-                        error3b += diff3b;
                     }
                     for (int m = 0; m < (blocksize - 2 * overlap); m++)
                     {
@@ -193,11 +185,16 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, pixel_t *e
                         error1r += diff1r;
                         error1g += diff1g;
                         error1b += diff1b;
-
-                        // block 3 -> mul_sum part 2
-                        diff3r = in[(irow + m + 2 * overlap) * ijump + (icol + k) * 3 + 0] * in[(lrow + 2 * overlap + m) * ijump + (lcol + blocksize - overlap + k) * 3 + 0];
-                        diff3g = in[(irow + m + 2 * overlap) * ijump + (icol + k) * 3 + 1] * in[(lrow + 2 * overlap + m) * ijump + (lcol + blocksize - overlap + k) * 3 + 1];
-                        diff3b = in[(irow + m + 2 * overlap) * ijump + (icol + k) * 3 + 2] * in[(lrow + 2 * overlap + m) * ijump + (lcol + blocksize - overlap + k) * 3 + 2];
+                    }
+                }
+                for (int k = 0; k < blocksize - overlap; k++)
+                {
+                    for (int m = 0; m < overlap; m++)
+                    {
+                        // block3 mul_sum part 1
+                        diff3r = in[(irow + k + overlap) * ijump + (icol + m) * 3 + 0] * in[(lrow + overlap + k) * ijump + (lcol + blocksize - overlap + m) * 3 + 0];
+                        diff3g = in[(irow + k + overlap) * ijump + (icol + m) * 3 + 1] * in[(lrow + overlap + k) * ijump + (lcol + blocksize - overlap + m) * 3 + 1];
+                        diff3b = in[(irow + k + overlap) * ijump + (icol + m) * 3 + 2] * in[(lrow + overlap + k) * ijump + (lcol + blocksize - overlap + m) * 3 + 2];
                         error3r += diff3r;
                         error3g += diff3g;
                         error3b += diff3b;
@@ -262,11 +259,16 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, pixel_t *e
                         error1r += diff1r;
                         error1g += diff1g;
                         error1b += diff1b;
-
-                        // block 3 -> mul_sum part 2
-                        diff3r = in[(irow + m + overlap) * ijump + (icol + k) * 3 + 0] * in[(lrow + overlap + m) * ijump + (lcol + blocksize - overlap + k) * 3 + 0];
-                        diff3g = in[(irow + m + overlap) * ijump + (icol + k) * 3 + 1] * in[(lrow + overlap + m) * ijump + (lcol + blocksize - overlap + k) * 3 + 1];
-                        diff3b = in[(irow + m + overlap) * ijump + (icol + k) * 3 + 2] * in[(lrow + overlap + m) * ijump + (lcol + blocksize - overlap + k) * 3 + 2];
+                    }
+                }
+                for (int k = 0; k < blocksize - overlap; k++)
+                {
+                    for (int m = 0; m < overlap; m++)
+                    {
+                        // block3 mul_sum part 1
+                        diff3r = in[(irow + k + overlap) * ijump + (icol + m) * 3 + 0] * in[(lrow + overlap + k) * ijump + (lcol + blocksize - overlap + m) * 3 + 0];
+                        diff3g = in[(irow + k + overlap) * ijump + (icol + m) * 3 + 1] * in[(lrow + overlap + k) * ijump + (lcol + blocksize - overlap + m) * 3 + 1];
+                        diff3b = in[(irow + k + overlap) * ijump + (icol + m) * 3 + 2] * in[(lrow + overlap + k) * ijump + (lcol + blocksize - overlap + m) * 3 + 2];
                         error3r += diff3r;
                         error3g += diff3g;
                         error3b += diff3b;
@@ -285,7 +287,7 @@ void generate_integral_image(image_t in, pixel_t *out)
     assert(in.channels == 3);
     int injump = in.width * 3;
     for (int i = 0; i < in.height + 1; i++)
-        out[i*outjump] = 0;
+        out[i * outjump] = 0;
     for (int i = 0; i < outjump; i++)
         out[i] = 0;
     for (int i = 1; i < in.height + 1; i++)
@@ -293,7 +295,7 @@ void generate_integral_image(image_t in, pixel_t *out)
         for (int j = 1; j < in.width + 1; j++)
         {
             pixel_t temp = out[i * outjump + j - 1] + out[(i - 1) * outjump + j] - out[(i - 1) * outjump + j - 1];
-            // offset -1 in row and col as we start with (1, 1) 
+            // offset -1 in row and col as we start with (1, 1)
             temp += in.data[(i - 1) * injump + 3 * j - 3] * in.data[(i - 1) * injump + 3 * j - 3];
             temp += in.data[(i - 1) * injump + 3 * j - 2] * in.data[(i - 1) * injump + 3 * j - 2];
             temp += in.data[(i - 1) * injump + 3 * j - 1] * in.data[(i - 1) * injump + 3 * j - 1];
@@ -319,7 +321,7 @@ coord find(pixel_t *errors, int height, int width, pixel_t tol_nom, pixel_t tol_
     // Count how many canditates exist in order to know the size of the array of candidates
     pixel_t tol_range = min_error + (min_error * tol_nom) / tol_den;
     // Create the array with maximum amount of possible candidates
-    coord candidates[height*width];
+    coord candidates[height * width];
     int idx = 0;
     for (int i = 0; i < height; i++)
     {
