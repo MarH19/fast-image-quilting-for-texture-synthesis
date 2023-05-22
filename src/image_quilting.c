@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "image_quilting.h"
-
+#include <immintrin.h>
 #define INTEGRAL(start, height, width, jumpsize) integral[start + height * jumpsize + width] - integral[start + width] - integral[start + height * jumpsize] + integral[start]
 
 /*
@@ -46,27 +46,175 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, pixel_t *e
 
         for (int irow = 0; irow < error_height; irow++)
         {
-            for (int icol = 0; icol < error_width; icol++)
+            for (int icol = 0; icol < error_width; icol+=14)
             {
-                error3r = error3g = error3b = 0;
-
                 int block3_in_integral_start = block3_in_integral_base + irow * integral_width + icol;
-                pixel_t block3_in_integral = INTEGRAL(block3_in_integral_start, height3, width3, integral_width);
+                int block3_in_integral_start1 = block3_in_integral_base + irow * integral_width + icol+1;
+                int block3_in_integral_start2 = block3_in_integral_base + irow * integral_width + icol+2;
+                int block3_in_integral_start3 = block3_in_integral_base + irow * integral_width + icol+3;
+                int block3_in_integral_start4 = block3_in_integral_base + irow * integral_width + icol+4;
+                int block3_in_integral_start5 = block3_in_integral_base + irow * integral_width + icol+5;
+                int block3_in_integral_start6 = block3_in_integral_base + irow * integral_width + icol+6;
+                int block3_in_integral_start7 = block3_in_integral_base + irow * integral_width + icol+7;
+                int block3_in_integral_start8 = block3_in_integral_base + irow * integral_width + icol+8;
+                int block3_in_integral_start9 = block3_in_integral_base + irow * integral_width + icol+9;
+                int block3_in_integral_start10 = block3_in_integral_base + irow * integral_width + icol+10;
+                int block3_in_integral_start11 = block3_in_integral_base + irow * integral_width + icol+11;
+                int block3_in_integral_start12 = block3_in_integral_base + irow * integral_width + icol+12;
+                int block3_in_integral_start13 = block3_in_integral_base + irow * integral_width + icol+13;
 
-                for (int k = 0; k < overlap; k++)
+                pixel_t block3_in_integral = INTEGRAL(block3_in_integral_start, height3, width3, integral_width);
+                pixel_t block3_in_integral1 = INTEGRAL(block3_in_integral_start1, height3, width3, integral_width);
+                pixel_t block3_in_integral2 = INTEGRAL(block3_in_integral_start2, height3, width3, integral_width);
+                pixel_t block3_in_integral3 = INTEGRAL(block3_in_integral_start3, height3, width3, integral_width);
+                pixel_t block3_in_integral4 = INTEGRAL(block3_in_integral_start4, height3, width3, integral_width);
+                pixel_t block3_in_integral5 = INTEGRAL(block3_in_integral_start5, height3, width3, integral_width);
+                pixel_t block3_in_integral6 = INTEGRAL(block3_in_integral_start6, height3, width3, integral_width);
+                pixel_t block3_in_integral7 = INTEGRAL(block3_in_integral_start7, height3, width3, integral_width);
+                pixel_t block3_in_integral8 = INTEGRAL(block3_in_integral_start8, height3, width3, integral_width);
+                pixel_t block3_in_integral9 = INTEGRAL(block3_in_integral_start9, height3, width3, integral_width);
+                pixel_t block3_in_integral10 = INTEGRAL(block3_in_integral_start10, height3, width3, integral_width);
+                pixel_t block3_in_integral11 = INTEGRAL(block3_in_integral_start11, height3, width3, integral_width);
+                pixel_t block3_in_integral12 = INTEGRAL(block3_in_integral_start12, height3, width3, integral_width);
+                pixel_t block3_in_integral13 = INTEGRAL(block3_in_integral_start13, height3, width3, integral_width);
+
+                __m256 error = _mm256_setzero_ps();           
+                __m256 error1 = _mm256_setzero_ps();              
+                __m256 error2 = _mm256_setzero_ps();              
+                __m256 error3 = _mm256_setzero_ps();              
+                __m256 error4 = _mm256_setzero_ps();              
+                __m256 error5 = _mm256_setzero_ps();              
+                __m256 error6 = _mm256_setzero_ps();              
+                __m256 error7 = _mm256_setzero_ps();              
+                __m256 error8 = _mm256_setzero_ps();              
+                __m256 error9 = _mm256_setzero_ps();              
+                __m256 error10 = _mm256_setzero_ps();
+                __m256 error11 = _mm256_setzero_ps();
+                __m256 error12 = _mm256_setzero_ps();
+                __m256 error13 = _mm256_setzero_ps();
+                for (int k = 0; k < blocksize; k++)
                 {
-                    for (int m = 0; m < blocksize; m++)
+                    for (int m = 0; m < overlap*3; m+=8)
                     {
-                        // block3 mul_sum part 1
-                        diff3r = in[(irow + m) * ijump + (icol + k) * 3 + 0] * in[(lrow + m) * ijump + (lcol + blocksize - overlap + k) * 3 + 0];
-                        diff3g = in[(irow + m) * ijump + (icol + k) * 3 + 1] * in[(lrow + m) * ijump + (lcol + blocksize - overlap + k) * 3 + 1];
-                        diff3b = in[(irow + m) * ijump + (icol + k) * 3 + 2] * in[(lrow + m) * ijump + (lcol + blocksize - overlap + k) * 3 + 2];
-                        error3r += diff3r;
-                        error3g += diff3g;
-                        error3b += diff3b;
+                        __m256 m_in = _mm256_loadu_ps(&in[(irow + k) * ijump + (icol + m) * 3 + 0]);
+                        __m256 m1_in = _mm256_loadu_ps(&in[(irow + k) * ijump + (icol + m+1) * 3 + 0]);
+                        __m256 m2_in = _mm256_loadu_ps(&in[(irow + k) * ijump + (icol + m+2) * 3 + 0]);
+                        __m256 m3_in = _mm256_loadu_ps(&in[(irow + k) * ijump + (icol + m+3) * 3 + 0]);
+                        __m256 m4_in = _mm256_loadu_ps(&in[(irow + k) * ijump + (icol + m+4) * 3 + 0]);
+                        __m256 m5_in = _mm256_loadu_ps(&in[(irow + k) * ijump + (icol + m+5) * 3 + 0]);
+                        __m256 m6_in = _mm256_loadu_ps(&in[(irow + k) * ijump + (icol + m+6) * 3 + 0]);
+                        __m256 m7_in = _mm256_loadu_ps(&in[(irow + k) * ijump + (icol + m+7) * 3 + 0]);
+                        __m256 m8_in = _mm256_loadu_ps(&in[(irow + k) * ijump + (icol + m+8) * 3 + 0]);
+                        __m256 m9_in = _mm256_loadu_ps(&in[(irow + k) * ijump + (icol + m+9) * 3 + 0]);
+                        __m256 m10_in = _mm256_loadu_ps(&in[(irow + k) * ijump + (icol + m+10) * 3 + 0]);
+                        __m256 m11_in = _mm256_loadu_ps(&in[(irow + k) * ijump + (icol + m+11) * 3 + 0]);
+                        __m256 m12_in = _mm256_loadu_ps(&in[(irow + k) * ijump + (icol + m+12) * 3 + 0]);
+                        __m256 m13_in = _mm256_loadu_ps(&in[(irow + k) * ijump + (icol + m+13) * 3 + 0]);
+
+                        __m256 m_out = _mm256_loadu_ps(&in[(lrow + k) * ijump + (lcol + blocksize - overlap + m) * 3 + 0]);
+                        __m256 m1_out = _mm256_loadu_ps(&in[(lrow + k) * ijump + (lcol + blocksize - overlap + m+1) * 3 + 0]);
+                        __m256 m2_out = _mm256_loadu_ps(&in[(lrow + k) * ijump + (lcol + blocksize - overlap + m+2) * 3 + 0]);
+                        __m256 m3_out = _mm256_loadu_ps(&in[(lrow + k) * ijump + (lcol + blocksize - overlap + m+3) * 3 + 0]);
+                        __m256 m4_out = _mm256_loadu_ps(&in[(lrow + k) * ijump + (lcol + blocksize - overlap + m+4) * 3 + 0]);
+                        __m256 m5_out = _mm256_loadu_ps(&in[(lrow + k) * ijump + (lcol + blocksize - overlap + m+5) * 3 + 0]);
+                        __m256 m6_out = _mm256_loadu_ps(&in[(lrow + k) * ijump + (lcol + blocksize - overlap + m+6) * 3 + 0]);
+                        __m256 m7_out = _mm256_loadu_ps(&in[(lrow + k) * ijump + (lcol + blocksize - overlap + m+7) * 3 + 0]);
+                        __m256 m8_out = _mm256_loadu_ps(&in[(lrow + k) * ijump + (lcol + blocksize - overlap + m+8) * 3 + 0]);
+                        __m256 m9_out = _mm256_loadu_ps(&in[(lrow + k) * ijump + (lcol + blocksize - overlap + m+9) * 3 + 0]);
+                        __m256 m10_out = _mm256_loadu_ps(&in[(lrow + k) * ijump + (lcol + blocksize - overlap + m+10) * 3 + 0]);
+                        __m256 m11_out = _mm256_loadu_ps(&in[(lrow + k) * ijump + (lcol + blocksize - overlap + m+11) * 3 + 0]);
+                        __m256 m12_out = _mm256_loadu_ps(&in[(lrow + k) * ijump + (lcol + blocksize - overlap + m+12) * 3 + 0]);
+                        __m256 m13_out = _mm256_loadu_ps(&in[(lrow + k) * ijump + (lcol + blocksize - overlap + m+13) * 3 + 0]);
+
+                        
+                        __m256 error = _mm256_fmadd_ps(m_in,m_out,error);
+                        __m256 error1 = _mm256_fmadd_ps(m1_in,m1_out,error1);
+                        __m256 error2 = _mm256_fmadd_ps(m2_in,m2_out,error2);
+                        __m256 error3 = _mm256_fmadd_ps(m3_in,m3_out,error3);
+                        __m256 error4 = _mm256_fmadd_ps(m4_in,m4_out,error4);
+                        __m256 error5 = _mm256_fmadd_ps(m5_in,m5_out,error5);
+                        __m256 error6 = _mm256_fmadd_ps(m6_in,m6_out,error6);
+                        __m256 error7 = _mm256_fmadd_ps(m7_in,m7_out,error7);
+                        __m256 error8 = _mm256_fmadd_ps(m8_in,m8_out,error8);
+                        __m256 error9 = _mm256_fmadd_ps(m9_in,m9_out,error9);
+                        __m256 error10 = _mm256_fmadd_ps(m10_in,m10_out,error10);
+                        __m256 error11 = _mm256_fmadd_ps(m11_in,m11_out,error11);
+                        __m256 error12 = _mm256_fmadd_ps(m12_in,m12_out,error12);
+                        __m256 error13 = _mm256_fmadd_ps(m13_in,m13_out,error13);
+                        
+                        
                     }
                 }
-                errors[irow * error_width + icol] = block3_out_integral - 2 * (error3r + error3g + error3b) + block3_in_integral;
+                // summation of the 14 icol pixels all at onc
+                __m256 sum01 = _mm256_hadd_ps(error,error);
+                __m256 sum02 = _mm256_hadd_ps(sum01,sum01);
+                pixel_t sum = _mm_cvtss_f32(_mm256_extractf128_ps(sum02, 0));
+                errors[irow * error_width + icol] = block3_out_integral -2*sum + block3_in_integral;
+
+                __m256 sum11 = _mm256_hadd_ps(error1,error1);
+                __m256 sum12 = _mm256_hadd_ps(sum11,sum11);
+                pixel_t sum1 = _mm_cvtss_f32(_mm256_extractf128_ps(sum12, 0));
+                errors[irow * error_width + icol+1] = block3_out_integral -2*sum1 + block3_in_integral1;
+
+                __m256 sum21 = _mm256_hadd_ps(error2,error2);
+                __m256 sum22 = _mm256_hadd_ps(sum21,sum21);
+                pixel_t sum2 = _mm_cvtss_f32(_mm256_extractf128_ps(sum22, 0));
+                errors[irow * error_width + icol+2]= block3_out_integral -2*sum2 + block3_in_integral2;
+
+                __m256 sum31 = _mm256_hadd_ps(error3,error3);
+                __m256 sum32 = _mm256_hadd_ps(sum31,sum31);
+                pixel_t sum3 = _mm_cvtss_f32(_mm256_extractf128_ps(sum32, 0));
+                errors[irow * error_width + icol+3]= block3_out_integral -2*sum3 + block3_in_integral3;
+
+                __m256 sum41 = _mm256_hadd_ps(error4,error4);
+                __m256 sum42 = _mm256_hadd_ps(sum41,sum41);
+                pixel_t sum4 = _mm_cvtss_f32(_mm256_extractf128_ps(sum42, 0));
+                errors[irow * error_width + icol+4]= block3_out_integral -2*sum4 + block3_in_integral4;
+
+                __m256 sum51 = _mm256_hadd_ps(error5,error5);
+                __m256 sum52 = _mm256_hadd_ps(sum51,sum51);
+                pixel_t sum5 = _mm_cvtss_f32(_mm256_extractf128_ps(sum52, 0));
+                errors[irow * error_width + icol+5]= block3_out_integral -2*sum5 + block3_in_integral5;
+
+                __m256 sum61 = _mm256_hadd_ps(error6,error6);
+                __m256 sum62 = _mm256_hadd_ps(sum61,sum61);
+                pixel_t sum6 = _mm_cvtss_f32(_mm256_extractf128_ps(sum62, 0));
+                errors[irow * error_width + icol+6]= block3_out_integral -2*sum6 + block3_in_integral6;
+
+                __m256 sum71 = _mm256_hadd_ps(error7,error7);
+                __m256 sum72 = _mm256_hadd_ps(sum71,sum71);
+                pixel_t sum7 = _mm_cvtss_f32(_mm256_extractf128_ps(sum72, 0));
+                errors[irow * error_width + icol+7]= block3_out_integral -2*sum7 + block3_in_integral7;
+
+                __m256 sum81 = _mm256_hadd_ps(error8,error8);
+                __m256 sum82 = _mm256_hadd_ps(sum81,sum81);
+                pixel_t sum8 = _mm_cvtss_f32(_mm256_extractf128_ps(sum82, 0));
+                errors[irow * error_width + icol+8]= block3_out_integral -2*sum8 + block3_in_integral8;
+
+                __m256 sum91 = _mm256_hadd_ps(error9,error9);
+                __m256 sum92 = _mm256_hadd_ps(sum91,sum91);
+                pixel_t sum9 = _mm_cvtss_f32(_mm256_extractf128_ps(sum92, 0));
+                errors[irow * error_width + icol+9]= block3_out_integral -2*sum9 + block3_in_integral9;
+
+                __m256 sum101 = _mm256_hadd_ps(error10,error10);
+                __m256 sum102 = _mm256_hadd_ps(sum101,sum101);
+                pixel_t sum10 = _mm_cvtss_f32(_mm256_extractf128_ps(sum102, 0));
+                errors[irow * error_width + icol+10]= block3_out_integral -2*sum10 + block3_in_integral10;
+
+                __m256 sum111 = _mm256_hadd_ps(error11,error11);
+                __m256 sum112 = _mm256_hadd_ps(sum111,sum111);
+                pixel_t sum_11 = _mm_cvtss_f32(_mm256_extractf128_ps(sum112, 0));
+                errors[irow * error_width + icol+11]= block3_out_integral -2*sum_11 + block3_in_integral11;
+                
+                __m256 sum121 = _mm256_hadd_ps(error12,error12);
+                __m256 sum122 = _mm256_hadd_ps(sum121,sum121);
+                pixel_t sum_12 = _mm_cvtss_f32(_mm256_extractf128_ps(sum122, 0));
+                errors[irow * error_width + icol+12]= block3_out_integral -2*sum_12 + block3_in_integral12;
+                
+                __m256 sum131 = _mm256_hadd_ps(error13,error13);
+                __m256 sum132 = _mm256_hadd_ps(sum131,sum131);
+                pixel_t sum_13 = _mm_cvtss_f32(_mm256_extractf128_ps(sum132, 0));
+                errors[irow * error_width + icol+13]= block3_out_integral -2*sum_13 + block3_in_integral13;
             }
         }
     }
@@ -311,10 +459,16 @@ coord find(pixel_t *errors, int height, int width, pixel_t tol_nom, pixel_t tol_
     pixel_t min_error = PIXEL_T_MAX;
 
     // search for the minimum error in the errors array and store it in a variable.
-    for (int i = 0; i < height; i++)
-        for (int j = 0; j < width; j++)
-            if (errors[i * width + j] < min_error)
+    for (int i = 0; i < height; i++){
+        for (int j = 0; j < width; j++){
+            if (errors[i * width + j] < min_error){
+                printf("%f",errors[i * width + j]);
+                if(errors[i * width + j]<0){
+                    printf("entered <0");
+                    min_error=0;
+                }
                 min_error = errors[i * width + j];
+            }}}
 
     // Count how many canditates exist in order to know the size of the array of candidates
     pixel_t tol_range = min_error + (min_error * tol_nom) / tol_den;

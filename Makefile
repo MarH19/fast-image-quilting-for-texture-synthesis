@@ -14,7 +14,7 @@ BINDIR    = bin
 DEBUG     = -g3 -DDEBUG
 INCLUDES  = -I./include
 LIBS     ?= -lm
-WARNINGS  = -Wall -Wextra -fsanitize=address,undefined
+WARNINGS  = -Wall -Wextra -fsanitize=address,undefined -march=native
 OPTIMIZE  = -O3 -mfma -fno-tree-vectorize
 
 TESTFLAGS  = $(WARNINGS) $(DEBUG) $(INCLUDES) $(LIBS)
