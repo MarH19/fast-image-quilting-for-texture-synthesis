@@ -3,8 +3,8 @@
 
 #ifndef IMAGE_QUILTING_HEADER
 #define IMAGE_QUILTING_HEADER
-typedef int32_t pixel_t;
-#define PIXEL_T_MAX INT32_MAX
+typedef uint32_t pixel_t;
+#define PIXEL_T_MAX UINT32_MAX
 
 typedef struct
 {
