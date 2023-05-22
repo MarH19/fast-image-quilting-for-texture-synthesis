@@ -12,13 +12,14 @@ OBJDIR    = obj
 BINDIR    = bin
 
 DEBUG     = -g3 -DDEBUG
-INCLUDES  = -I./include
+INCLUDES  = -I./include 
+INTRINSICS = -march=native
 LIBS     ?= -lm
 WARNINGS  = -Wall -Wextra -fsanitize=address,undefined
 OPTIMIZE  = -O3 -mfma -fno-tree-vectorize
 
-TESTFLAGS  = $(WARNINGS) $(DEBUG) $(INCLUDES) $(LIBS)
-BENCHFLAGS = $(OPTIMIZE) $(INCLUDES) $(LIBS)
+TESTFLAGS  = $(WARNINGS) $(DEBUG) $(INCLUDES) $(LIBS) $(INTRINSICS)
+BENCHFLAGS = $(OPTIMIZE) $(INCLUDES) $(LIBS) $(INTRINSICS)
 
 # CFLAGS changes if you build with tests or benchmarks
 # but once built it does not recompile (e.g. source)

@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <immintrin.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,29 +45,189 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, pixel_t *e
         int block3_out_integral_start = lrow * integral_width + lcol + (blocksize - overlap);
         pixel_t block3_out_integral = INTEGRAL(block3_out_integral_start, height3, width3, integral_width);
 
+        int icol;
         for (int irow = 0; irow < error_height; irow++)
         {
-            for (int icol = 0; icol < error_width; icol++)
+            for (icol = 0; icol < error_width - 15; icol += 16)
             {
-                error3r = error3g = error3b = 0;
+                int block3_in_integral_start00 = block3_in_integral_base + irow * integral_width + icol + 0;
+                int block3_in_integral_start01 = block3_in_integral_base + irow * integral_width + icol + 1;
+                int block3_in_integral_start02 = block3_in_integral_base + irow * integral_width + icol + 2;
+                int block3_in_integral_start03 = block3_in_integral_base + irow * integral_width + icol + 3;
+                int block3_in_integral_start04 = block3_in_integral_base + irow * integral_width + icol + 4;
+                int block3_in_integral_start05 = block3_in_integral_base + irow * integral_width + icol + 5;
+                int block3_in_integral_start06 = block3_in_integral_base + irow * integral_width + icol + 6;
+                int block3_in_integral_start07 = block3_in_integral_base + irow * integral_width + icol + 7;
+                int block3_in_integral_start08 = block3_in_integral_base + irow * integral_width + icol + 8;
+                int block3_in_integral_start09 = block3_in_integral_base + irow * integral_width + icol + 9;
+                int block3_in_integral_start10 = block3_in_integral_base + irow * integral_width + icol + 10;
+                int block3_in_integral_start11 = block3_in_integral_base + irow * integral_width + icol + 11;
+                int block3_in_integral_start12 = block3_in_integral_base + irow * integral_width + icol + 12;
+                int block3_in_integral_start13 = block3_in_integral_base + irow * integral_width + icol + 13;
+                int block3_in_integral_start14 = block3_in_integral_base + irow * integral_width + icol + 14;
+                int block3_in_integral_start15 = block3_in_integral_base + irow * integral_width + icol + 15;
 
-                int block3_in_integral_start = block3_in_integral_base + irow * integral_width + icol;
-                pixel_t block3_in_integral = INTEGRAL(block3_in_integral_start, height3, width3, integral_width);
+                pixel_t block3_in_integral00 = INTEGRAL(block3_in_integral_start00, height3, width3, integral_width);
+                pixel_t block3_in_integral01 = INTEGRAL(block3_in_integral_start01, height3, width3, integral_width);
+                pixel_t block3_in_integral02 = INTEGRAL(block3_in_integral_start02, height3, width3, integral_width);
+                pixel_t block3_in_integral03 = INTEGRAL(block3_in_integral_start03, height3, width3, integral_width);
+                pixel_t block3_in_integral04 = INTEGRAL(block3_in_integral_start04, height3, width3, integral_width);
+                pixel_t block3_in_integral05 = INTEGRAL(block3_in_integral_start05, height3, width3, integral_width);
+                pixel_t block3_in_integral06 = INTEGRAL(block3_in_integral_start06, height3, width3, integral_width);
+                pixel_t block3_in_integral07 = INTEGRAL(block3_in_integral_start07, height3, width3, integral_width);
+                pixel_t block3_in_integral08 = INTEGRAL(block3_in_integral_start08, height3, width3, integral_width);
+                pixel_t block3_in_integral09 = INTEGRAL(block3_in_integral_start09, height3, width3, integral_width);
+                pixel_t block3_in_integral10 = INTEGRAL(block3_in_integral_start10, height3, width3, integral_width);
+                pixel_t block3_in_integral11 = INTEGRAL(block3_in_integral_start11, height3, width3, integral_width);
+                pixel_t block3_in_integral12 = INTEGRAL(block3_in_integral_start12, height3, width3, integral_width);
+                pixel_t block3_in_integral13 = INTEGRAL(block3_in_integral_start13, height3, width3, integral_width);
+                pixel_t block3_in_integral14 = INTEGRAL(block3_in_integral_start14, height3, width3, integral_width);
+                pixel_t block3_in_integral15 = INTEGRAL(block3_in_integral_start15, height3, width3, integral_width);
+
+                __m256i error00 = _mm256_setzero_si256();
+                __m256i error01 = _mm256_setzero_si256();
+                __m256i error02 = _mm256_setzero_si256();
+                __m256i error03 = _mm256_setzero_si256();
+                __m256i error04 = _mm256_setzero_si256();
+                __m256i error05 = _mm256_setzero_si256();
+                __m256i error06 = _mm256_setzero_si256();
+                __m256i error07 = _mm256_setzero_si256();
+                __m256i error08 = _mm256_setzero_si256();
+                __m256i error09 = _mm256_setzero_si256();
+                __m256i error10 = _mm256_setzero_si256();
+                __m256i error11 = _mm256_setzero_si256();
+                __m256i error12 = _mm256_setzero_si256();
+                __m256i error13 = _mm256_setzero_si256();
+                __m256i error14 = _mm256_setzero_si256();
+                __m256i error15 = _mm256_setzero_si256();
 
                 for (int k = 0; k < blocksize; k++)
                 {
-                    for (int m = 0; m < overlap; m++)
+                    for (int m = 0; m < overlap * 3; m += 8)
                     {
-                        // block3 mul_sum part 1
-                        diff3r = in[(irow + k) * ijump + (icol + m) * 3 + 0] * in[(lrow + k) * ijump + (lcol + blocksize - overlap + m) * 3 + 0];
-                        diff3g = in[(irow + k) * ijump + (icol + m) * 3 + 1] * in[(lrow + k) * ijump + (lcol + blocksize - overlap + m) * 3 + 1];
-                        diff3b = in[(irow + k) * ijump + (icol + m) * 3 + 2] * in[(lrow + k) * ijump + (lcol + blocksize - overlap + m) * 3 + 2];
-                        error3r += diff3r;
-                        error3g += diff3g;
-                        error3b += diff3b;
+                        __m256i m00_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
+                        __m256i m01_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
+                        __m256i m02_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
+                        __m256i m03_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
+                        __m256i m04_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
+                        __m256i m05_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
+                        __m256i m06_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
+                        __m256i m07_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
+                        __m256i m08_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
+                        __m256i m09_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
+                        __m256i m10_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
+                        __m256i m11_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
+                        __m256i m12_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
+                        __m256i m13_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
+                        __m256i m14_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
+                        __m256i m15_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
+                        __m256i m_out = _mm256_loadu_si256(&in[(lrow + k) * ijump + (lcol + blocksize - overlap) * 3 + m]);
+
+                        error00 = _mm256_add_epi32(_mm256_mul_epu32(m00_in, m_out), error00);
+                        error01 = _mm256_add_epi32(_mm256_mul_epu32(m01_in, m_out), error00);
+                        error02 = _mm256_add_epi32(_mm256_mul_epu32(m02_in, m_out), error00);
+                        error03 = _mm256_add_epi32(_mm256_mul_epu32(m03_in, m_out), error00);
+                        error04 = _mm256_add_epi32(_mm256_mul_epu32(m04_in, m_out), error00);
+                        error05 = _mm256_add_epi32(_mm256_mul_epu32(m05_in, m_out), error00);
+                        error06 = _mm256_add_epi32(_mm256_mul_epu32(m06_in, m_out), error00);
+                        error07 = _mm256_add_epi32(_mm256_mul_epu32(m07_in, m_out), error00);
+                        error08 = _mm256_add_epi32(_mm256_mul_epu32(m08_in, m_out), error00);
+                        error09 = _mm256_add_epi32(_mm256_mul_epu32(m09_in, m_out), error00);
+                        error10 = _mm256_add_epi32(_mm256_mul_epu32(m10_in, m_out), error00);
+                        error11 = _mm256_add_epi32(_mm256_mul_epu32(m11_in, m_out), error00);
+                        error12 = _mm256_add_epi32(_mm256_mul_epu32(m12_in, m_out), error00);
+                        error13 = _mm256_add_epi32(_mm256_mul_epu32(m13_in, m_out), error00);
+                        error14 = _mm256_add_epi32(_mm256_mul_epu32(m14_in, m_out), error00);
+                        error15 = _mm256_add_epi32(_mm256_mul_epu32(m15_in, m_out), error00);
+                        printf("row %d col %d\n", irow + k, icol + m / 8);
                     }
                 }
-                errors[irow * error_width + icol] = block3_out_integral - 2 * (error3r + error3g + error3b) + block3_in_integral;
+                __m256i idx1 = _mm256_set_epi32(1, 0, 3, 2, 5, 4, 7, 6);
+                error00 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error00, idx1), error00);
+                error01 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error01, idx1), error01);
+                error02 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error02, idx1), error02);
+                error03 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error03, idx1), error03);
+                error04 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error04, idx1), error04);
+                error05 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error05, idx1), error05);
+                error06 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error06, idx1), error06);
+                error07 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error07, idx1), error07);
+                error08 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error08, idx1), error08);
+                error09 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error09, idx1), error09);
+                error10 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error10, idx1), error10);
+                error11 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error11, idx1), error11);
+                error12 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error12, idx1), error12);
+                error13 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error13, idx1), error13);
+                error14 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error14, idx1), error14);
+                error15 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error15, idx1), error15);
+
+                __m256i idx2 = _mm256_set_epi32(2, 0, 0, 0, 6, 0, 4, 0);
+                error00 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error00, idx2), error00);
+                error01 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error01, idx2), error01);
+                error02 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error02, idx2), error02);
+                error03 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error03, idx2), error03);
+                error04 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error04, idx2), error04);
+                error05 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error05, idx2), error05);
+                error06 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error06, idx2), error06);
+                error07 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error07, idx2), error07);
+                error08 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error08, idx2), error08);
+                error09 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error09, idx2), error09);
+                error10 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error10, idx2), error10);
+                error11 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error11, idx2), error11);
+                error12 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error12, idx2), error12);
+                error13 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error13, idx2), error13);
+                error14 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error14, idx2), error14);
+                error15 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error15, idx2), error15);
+
+                __m256i idx3 = _mm256_set_epi32(4, 0, 0, 0, 0, 0, 0, 0);
+                error00 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error00, idx3), error00);
+                error01 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error01, idx3), error01);
+                error02 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error02, idx3), error02);
+                error03 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error03, idx3), error03);
+                error04 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error04, idx3), error04);
+                error05 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error05, idx3), error05);
+                error06 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error06, idx3), error06);
+                error07 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error07, idx3), error07);
+                error08 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error08, idx3), error08);
+                error09 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error09, idx3), error09);
+                error10 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error10, idx3), error10);
+                error11 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error11, idx3), error11);
+                error12 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error12, idx3), error12);
+                error13 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error13, idx3), error13);
+                error14 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error14, idx3), error14);
+                error15 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error15, idx3), error15);
+
+                pixel_t result00 = _mm256_extract_epi32(error00, 0);
+                pixel_t result01 = _mm256_extract_epi32(error01, 0);
+                pixel_t result02 = _mm256_extract_epi32(error02, 0);
+                pixel_t result03 = _mm256_extract_epi32(error03, 0);
+                pixel_t result04 = _mm256_extract_epi32(error04, 0);
+                pixel_t result05 = _mm256_extract_epi32(error05, 0);
+                pixel_t result06 = _mm256_extract_epi32(error06, 0);
+                pixel_t result07 = _mm256_extract_epi32(error07, 0);
+                pixel_t result08 = _mm256_extract_epi32(error08, 0);
+                pixel_t result09 = _mm256_extract_epi32(error09, 0);
+                pixel_t result10 = _mm256_extract_epi32(error10, 0);
+                pixel_t result11 = _mm256_extract_epi32(error11, 0);
+                pixel_t result12 = _mm256_extract_epi32(error12, 0);
+                pixel_t result13 = _mm256_extract_epi32(error13, 0);
+                pixel_t result14 = _mm256_extract_epi32(error14, 0);
+                pixel_t result15 = _mm256_extract_epi32(error15, 0);
+                errors[irow * error_width + icol + 0] = block3_out_integral - 2 * result00 + block3_in_integral00;
+                errors[irow * error_width + icol + 1] = block3_out_integral - 2 * result01 + block3_in_integral01;
+                errors[irow * error_width + icol + 2] = block3_out_integral - 2 * result02 + block3_in_integral02;
+                errors[irow * error_width + icol + 3] = block3_out_integral - 2 * result03 + block3_in_integral03;
+                errors[irow * error_width + icol + 4] = block3_out_integral - 2 * result04 + block3_in_integral04;
+                errors[irow * error_width + icol + 5] = block3_out_integral - 2 * result05 + block3_in_integral05;
+                errors[irow * error_width + icol + 6] = block3_out_integral - 2 * result06 + block3_in_integral06;
+                errors[irow * error_width + icol + 7] = block3_out_integral - 2 * result07 + block3_in_integral07;
+                errors[irow * error_width + icol + 8] = block3_out_integral - 2 * result08 + block3_in_integral08;
+                errors[irow * error_width + icol + 9] = block3_out_integral - 2 * result09 + block3_in_integral09;
+                errors[irow * error_width + icol + 10] = block3_out_integral - 2 * result10 + block3_in_integral10;
+                errors[irow * error_width + icol + 11] = block3_out_integral - 2 * result11 + block3_in_integral11;
+                errors[irow * error_width + icol + 12] = block3_out_integral - 2 * result12 + block3_in_integral12;
+                errors[irow * error_width + icol + 13] = block3_out_integral - 2 * result13 + block3_in_integral13;
+                errors[irow * error_width + icol + 14] = block3_out_integral - 2 * result14 + block3_in_integral14;
+                errors[irow * error_width + icol + 15] = block3_out_integral - 2 * result15 + block3_in_integral15;
             }
         }
     }

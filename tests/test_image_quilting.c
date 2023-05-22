@@ -20,7 +20,7 @@ static const pixel_t out_gen_integral[] = {
 #define BLOCKSIZE 24
 #define OVERLAP 8
 #define NUM_BLOCKS 3 /* -> thus we get a 3x3 block image */
-#define INSIZE 100
+#define INSIZE 183
 #define OUTSIZE (NUM_BLOCKS * BLOCKSIZE - (NUM_BLOCKS - 1) * OVERLAP)
 #define ERRSIZE (INSIZE - BLOCKSIZE + 1)
 static pixel_t in[INSIZE * INSIZE * 3]; /* 3 because of the colors */
@@ -39,7 +39,7 @@ void prepare_in_img()
     for (int i = 0; i < INSIZE; i++)
         for (int j = 0; j < INSIZE * 3; j++)
             // I found doing that not random is quite useful for visual checks
-            in[i * (INSIZE * 3) + j] = i + j / 3;
+            in[i * (INSIZE * 3) + j] = MIN(i + j / 3, 255);
 }
 
 /* basically tell what blocks should be put at that position, array stops with -1
@@ -160,6 +160,7 @@ void test_fill_error_matrix_top_border()
     for (int i = 0; i < ERRSIZE; i++)
         for (int j = 0; j < ERRSIZE; j++)
         {
+            TEST_ASSERT(errors_exp[i * ERRSIZE + j] == errors_res[i * ERRSIZE + j]);
             if (!TEST_CHECK(errors_exp[i * ERRSIZE + j] == errors_res[i * ERRSIZE + j]))
             {
                 count++;
