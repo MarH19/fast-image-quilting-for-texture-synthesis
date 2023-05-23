@@ -30,6 +30,7 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
     error_t diff1r, diff1g, diff1b, error1r, error1g, error1b;
     error_t diff2r, diff2g, diff2b, error2r, error2g, error2b;
     error_t diff3r, diff3g, diff3b, error3r, error3g, error3b;
+    __m256i zero = _mm256_setzero_si256();
 
     if (orow == 0)
     {
@@ -39,13 +40,11 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
          * 3 . .
          */
         int block3_in_integral_base = 0;
-
         int height3 = blocksize;
         int width3 = overlap;
         // precalculation for block 3
         int block3_out_integral_start = lrow * integral_width + lcol + (blocksize - overlap);
         error_t block3_out_integral = INTEGRAL(block3_out_integral_start, height3, width3, integral_width);
-        __m256i zero = _mm256_setzero_si256();
 
         for (int irow = 0; irow < error_height; irow++)
         {
@@ -63,20 +62,20 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                     int m;
                     for (m = 0; m < overlap * 3 - 15; m += 16)
                     {
-                        __m256i min00 = _mm256_loadu_si256((__m256i_u *) &in[(irow + k) * ijump + (icol + 0) * 3 + m]);
-                        __m256i mout = _mm256_loadu_si256((__m256i_u *) &in[(lrow + k) * ijump + (lcol + blocksize - overlap) * 3 + m]);
-                        __m256i min00_x_out = _mm256_madd_epi16(min00, mout);
-                        error00 = _mm256_add_epi32(min00_x_out, error00);
+                        __m256i curr_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
+                        __m256i left_in = _mm256_loadu_si256((__m256i_u *)&in[(lrow + k) * ijump + (lcol + blocksize - overlap) * 3 + m]);
+                        __m256i mull00 = _mm256_madd_epi16(curr_in_00, left_in);
+                        error00 = _mm256_add_epi32(mull00, error00);
                     }
-                    for (; m < overlap * 3 - 7; m += 8)  // should run only once everything else is a bug
+                    for (; m < overlap * 3 - 7; m += 16) // should run only once everything else is a bug
                     {
-                        __m256i min00 = _mm256_loadu_si256((__m256i_u *) &in[(irow + k) * ijump + (icol + 0) * 3 + m]);
-                        __m256i mout = _mm256_loadu_si256((__m256i_u *) &in[(lrow + k) * ijump + (lcol + blocksize - overlap) * 3 + m]);
-                        __m256i min00_x_out = _mm256_madd_epi16(min00, mout);
-                        error00 = _mm256_add_epi32(_mm256_blend_epi32(min00_x_out, zero, 0b11110000), error00);
+                        __m256i curr_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
+                        __m256i left_in = _mm256_loadu_si256((__m256i_u *)&in[(lrow + k) * ijump + (lcol + blocksize - overlap) * 3 + m]);
+                        __m256i mull00 = _mm256_madd_epi16(curr_in_00, left_in);
+                        error00 = _mm256_add_epi32(_mm256_blend_epi32(mull00, zero, 0b11110000), error00);
                     }
                 }
-                _mm256_storeu_si256((__m256i_u *) error00_arr, error00);
+                _mm256_storeu_si256((__m256i_u *)error00_arr, error00);
                 errors[irow * error_width + icol] = block3_out_integral - 2 * VEC32ADD(error00_arr) + block3_in_integral;
             }
         }
@@ -159,7 +158,8 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
         {
             for (int icol = 0; icol < error_width; icol++)
             {
-                error0r = error1r = error2r = error3r = error0g = error1g = error2g = error3g = error0b = error1b = error2b = error3b = 0;
+                __m256i error00, error00_block0, error00_block1, error00_block2, error00_block3, error00_block02, error00_block13;
+                error00 = error00_block0 = error00_block1 = error00_block2 = error00_block3 = error00_block02 = error00_block13 = zero;
                 /* calculation of block 1 integral part in-variant */
                 int block1_in_integral_start = block1_in_integral_base + irow * integral_width + icol;
                 error_t block1_in_integral = INTEGRAL(block1_in_integral_start, height1, width1, integral_width);
@@ -169,49 +169,89 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
 
                 for (int k = 0; k < overlap; k++)
                 {
-                    for (int m = 0; m < overlap; m++)
+                    int m;
+                    for (m = 0; m < overlap * 3 - 15; m += 16)
                     {
-                        // block0 l2norm
-                        diff0r = (error_t)in[(irow + k) * ijump + (icol + m) * 3 + 0] - (error_t)out[(orow + k) * ojump + (ocol + m) * 3 + 0];
-                        diff0g = (error_t)in[(irow + k) * ijump + (icol + m) * 3 + 1] - (error_t)out[(orow + k) * ojump + (ocol + m) * 3 + 1];
-                        diff0b = (error_t)in[(irow + k) * ijump + (icol + m) * 3 + 2] - (error_t)out[(orow + k) * ojump + (ocol + m) * 3 + 2];
-                        error0r += diff0r * diff0r;
-                        error0g += diff0g * diff0g;
-                        error0b += diff0b * diff0b;
+                        // block0 l2norm part1
+                        __m256i curr_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol)*3 + m]);
+                        __m256i curr_out = _mm256_loadu_si256((__m256i_u *)&out[(orow + k) * ojump + (ocol)*3 + m]);
+                        __m256i diff00 = _mm256_sub_epi16(curr_in_00, curr_out);
+                        error00_block0 = _mm256_add_epi32(error00_block0, _mm256_madd_epi16(diff00, diff00));
+                    }
+                    for (; m < overlap * 3 - 7; m += 16) // should run only at most once, everything else is a bug
+                    {
+                        // block0 l2norm part2
+                        __m256i curr_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol)*3 + m]);
+                        __m256i curr_out = _mm256_loadu_si256((__m256i_u *)&out[(orow + k) * ojump + (ocol)*3 + m]);
+                        __m256i diff00 = _mm256_sub_epi16(curr_in_00, curr_out);
+                        __m256i sqrdiff00 = _mm256_madd_epi16(diff00, diff00);
+                        error00_block0 = _mm256_add_epi32(error00_block0, _mm256_blend_epi32(sqrdiff00, zero, 0b11110000));
 
-                        // block2 l2norm
-                        diff2r = (error_t)in[(irow + k) * ijump + (icol + m + blocksize - overlap) * 3 + 0] - (error_t)out[(orow + k) * ojump + (ocol + m + blocksize - overlap) * 3 + 0];
-                        diff2g = (error_t)in[(irow + k) * ijump + (icol + m + blocksize - overlap) * 3 + 1] - (error_t)out[(orow + k) * ojump + (ocol + m + blocksize - overlap) * 3 + 1];
-                        diff2b = (error_t)in[(irow + k) * ijump + (icol + m + blocksize - overlap) * 3 + 2] - (error_t)out[(orow + k) * ojump + (ocol + m + blocksize - overlap) * 3 + 2];
-                        error2r += diff2r * diff2r;
-                        error2g += diff2g * diff2g;
-                        error2b += diff2b * diff2b;
+                        // block1 mulsum part1
+                        // above_in_00 = above-block input number 00
+                        __m256i above_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(arow + (blocksize - overlap) + k) * ijump + (acol)*3 + m]);
+                        __m256i mul00 = _mm256_madd_epi16(curr_in_00, above_in_00);
+                        error00_block1 = _mm256_add_epi32(error00_block1, _mm256_blend_epi32(mul00, zero, 0b00001111));
                     }
-                    for (int m = 0; m < (blocksize - 2 * overlap); m++)
+                    for (; m < (blocksize - overlap) * 3 - 15; m += 16)
                     {
-                        // block 1 -> mul_sum
-                        diff1r = (error_t)in[(irow + k) * ijump + (icol + m + overlap) * 3 + 0] * (error_t)in[(arow + (blocksize - overlap) + k) * ijump + (acol + m + overlap) * 3 + 0];
-                        diff1g = (error_t)in[(irow + k) * ijump + (icol + m + overlap) * 3 + 1] * (error_t)in[(arow + (blocksize - overlap) + k) * ijump + (acol + m + overlap) * 3 + 1];
-                        diff1b = (error_t)in[(irow + k) * ijump + (icol + m + overlap) * 3 + 2] * (error_t)in[(arow + (blocksize - overlap) + k) * ijump + (acol + m + overlap) * 3 + 2];
-                        error1r += diff1r;
-                        error1g += diff1g;
-                        error1b += diff1b;
+                        // block1 mulsum part2
+                        __m256i curr_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol)*3 + m]);
+                        __m256i above_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(arow + (blocksize - overlap) + k) * ijump + (acol)*3 + m]);
+                        __m256i mul00 = _mm256_madd_epi16(curr_in_00, above_in_00);
+                        error00_block1 = _mm256_add_epi32(error00_block1, mul00);
+                    }
+                    for (; m < (blocksize - overlap) * 3 - 7; m += 16) // should run only at most once, everything else is a bug
+                    {
+                        // block1 mulsum part3
+                        __m256i curr_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol)*3 + m]);
+                        __m256i above_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(arow + (blocksize - overlap) + k) * ijump + (acol)*3 + m]);
+                        __m256i mul00 = _mm256_madd_epi16(curr_in_00, above_in_00);
+                        error00_block1 = _mm256_add_epi32(error00_block1, _mm256_blend_epi32(mul00, zero, 0b11110000));
+
+                        // block2 l2norm part1
+                        __m256i curr_out = _mm256_loadu_si256((__m256i_u *)&out[(orow + k) * ojump + (ocol)*3 + m]);
+                        __m256i diff00 = _mm256_sub_epi16(curr_in_00, curr_out);
+                        __m256i sqrdiff00 = _mm256_madd_epi16(diff00, diff00);
+                        error00_block2 = _mm256_add_epi32(error00_block2, _mm256_blend_epi32(sqrdiff00, zero, 0b00001111));
+                    }
+                    for (; m < blocksize * 3 - 15; m += 16)
+                    {
+                        // block2 l2norm part2
+                        __m256i curr_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol)*3 + m]);
+                        __m256i curr_out = _mm256_loadu_si256((__m256i_u *)&out[(orow + k) * ojump + (ocol)*3 + m]);
+                        __m256i diff00 = _mm256_sub_epi16(curr_in_00, curr_out);
+                        error00_block2 = _mm256_add_epi32(error00_block2, _mm256_madd_epi16(diff00, diff00));
                     }
                 }
-                for (int k = 0; k < blocksize - overlap; k++)
+                // we start with row overlap to ensure equivalence in handling block 3 (to other cases)
+                for (int k = overlap; k < blocksize; k++)
                 {
-                    for (int m = 0; m < overlap; m++)
+                    int m;
+                    for (m = 0; m < overlap * 3 - 15; m += 16)
                     {
-                        // block3 mul_sum part 1
-                        diff3r = (error_t)in[(irow + k + overlap) * ijump + (icol + m) * 3 + 0] * (error_t)in[(lrow + overlap + k) * ijump + (lcol + blocksize - overlap + m) * 3 + 0];
-                        diff3g = (error_t)in[(irow + k + overlap) * ijump + (icol + m) * 3 + 1] * (error_t)in[(lrow + overlap + k) * ijump + (lcol + blocksize - overlap + m) * 3 + 1];
-                        diff3b = (error_t)in[(irow + k + overlap) * ijump + (icol + m) * 3 + 2] * (error_t)in[(lrow + overlap + k) * ijump + (lcol + blocksize - overlap + m) * 3 + 2];
-                        error3r += diff3r;
-                        error3g += diff3g;
-                        error3b += diff3b;
+                        // block3 mulsum part1
+                        __m256i curr_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
+                        __m256i left_in = _mm256_loadu_si256((__m256i_u *)&in[(lrow + k) * ijump + (lcol + blocksize - overlap) * 3 + m]);
+                        __m256i mull00 = _mm256_madd_epi16(curr_in_00, left_in);
+                        error00_block3 = _mm256_add_epi32(mull00, error00_block3);
+                    }
+                    for (; m < overlap * 3 - 7; m += 16) // should run only once everything else is a bug
+                    {
+                        // block3 mulsum part2
+                        __m256i curr_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
+                        __m256i left_in = _mm256_loadu_si256((__m256i_u *)&in[(lrow + k) * ijump + (lcol + blocksize - overlap) * 3 + m]);
+                        __m256i mull00 = _mm256_madd_epi16(curr_in_00, left_in);
+                        error00_block3 = _mm256_add_epi32(_mm256_blend_epi32(mull00, zero, 0b11110000), error00_block3);
                     }
                 }
-                errors[irow * error_width + icol] = error0r + error0g + error0b + error2r + error2g + error2b + block1_out_integral - 2 * (error1r + error1g + error1b) + block1_in_integral + block3_out_integral - 2 * (error3r + error3g + error3b) + block3_in_integral;
+                
+                error_t error00_arr[64 / sizeof(error_t)];
+                error00_block02 = _mm256_add_epi32(error00_block0, error00_block2);
+                error00_block13 = _mm256_slli_epi32(_mm256_add_epi32(error00_block1, error00_block3), 1);
+                error00 = _mm256_sub_epi32(error00_block02, error00_block13);
+                _mm256_storeu_si256((__m256i_u *)&error00_arr[0], error00);
+                errors[irow * error_width + icol] = block1_out_integral + block1_in_integral + VEC32ADD(error00_arr) + block3_out_integral + block3_in_integral;
             }
         }
     }
