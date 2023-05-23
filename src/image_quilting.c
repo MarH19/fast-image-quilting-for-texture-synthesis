@@ -248,9 +248,10 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, pixel_t *e
         int block1_out_integral_start = (arow + blocksize - overlap) * integral_width + acol;
         pixel_t block1_out_integral = INTEGRAL(block1_out_integral_start, height1, width1, integral_width);
 
+        int icol;
         for (int irow = 0; irow < error_height; irow++)
         {
-            for (int icol = 0; icol < error_width-15; icol+=16)
+            for (icol = 0; icol < error_width - 15; icol += 16)
             {
                 /* calculation of block 1 integral part in-variant */
                 int block1_in_integral_start00 = block1_in_integral_base + irow * integral_width + icol + 0;
@@ -269,7 +270,7 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, pixel_t *e
                 int block1_in_integral_start13 = block1_in_integral_base + irow * integral_width + icol + 13;
                 int block1_in_integral_start14 = block1_in_integral_base + irow * integral_width + icol + 14;
                 int block1_in_integral_start15 = block1_in_integral_base + irow * integral_width + icol + 15;
-                
+
                 pixel_t block1_in_integral00 = INTEGRAL(block1_in_integral_start00, height1, width1, integral_width);
                 pixel_t block1_in_integral01 = INTEGRAL(block1_in_integral_start01, height1, width1, integral_width);
                 pixel_t block1_in_integral02 = INTEGRAL(block1_in_integral_start02, height1, width1, integral_width);
@@ -286,317 +287,279 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, pixel_t *e
                 pixel_t block1_in_integral13 = INTEGRAL(block1_in_integral_start13, height1, width1, integral_width);
                 pixel_t block1_in_integral14 = INTEGRAL(block1_in_integral_start14, height1, width1, integral_width);
                 pixel_t block1_in_integral15 = INTEGRAL(block1_in_integral_start15, height1, width1, integral_width);
-                
-                __m256i error1_00 = _mm256_setzero_si256();
-                __m256i error1_01 = _mm256_setzero_si256();
-                __m256i error1_02 = _mm256_setzero_si256();
-                __m256i error1_03 = _mm256_setzero_si256();
-                __m256i error1_04 = _mm256_setzero_si256();
-                __m256i error1_05 = _mm256_setzero_si256();
-                __m256i error1_06 = _mm256_setzero_si256();
-                __m256i error1_07 = _mm256_setzero_si256();
-                __m256i error1_08 = _mm256_setzero_si256();
-                __m256i error1_09 = _mm256_setzero_si256();
-                __m256i error1_10 = _mm256_setzero_si256();
-                __m256i error1_11 = _mm256_setzero_si256();
-                __m256i error1_12 = _mm256_setzero_si256();
-                __m256i error1_13 = _mm256_setzero_si256();
-                __m256i error1_14 = _mm256_setzero_si256();
-                __m256i error1_15 = _mm256_setzero_si256();
 
-                __m256i error2_00 = _mm256_setzero_si256();
-                __m256i error2_01 = _mm256_setzero_si256();
-                __m256i error2_02 = _mm256_setzero_si256();
-                __m256i error2_03 = _mm256_setzero_si256();
-                __m256i error2_04 = _mm256_setzero_si256();
-                __m256i error2_05 = _mm256_setzero_si256();
-                __m256i error2_06 = _mm256_setzero_si256();
-                __m256i error2_07 = _mm256_setzero_si256();
-                __m256i error2_08 = _mm256_setzero_si256();
-                __m256i error2_09 = _mm256_setzero_si256();
-                __m256i error2_10 = _mm256_setzero_si256();
-                __m256i error2_11 = _mm256_setzero_si256();
-                __m256i error2_12 = _mm256_setzero_si256();
-                __m256i error2_13 = _mm256_setzero_si256();
-                __m256i error2_14 = _mm256_setzero_si256();
-                __m256i error2_15 = _mm256_setzero_si256();
+                __m256i error00_l2 = _mm256_setzero_si256();
+                __m256i error01_l2 = _mm256_setzero_si256();
+                __m256i error02_l2 = _mm256_setzero_si256();
+                __m256i error03_l2 = _mm256_setzero_si256();
+                __m256i error04_l2 = _mm256_setzero_si256();
+                __m256i error05_l2 = _mm256_setzero_si256();
+                __m256i error06_l2 = _mm256_setzero_si256();
+                __m256i error07_l2 = _mm256_setzero_si256();
+                __m256i error08_l2 = _mm256_setzero_si256();
+                __m256i error09_l2 = _mm256_setzero_si256();
+                __m256i error10_l2 = _mm256_setzero_si256();
+                __m256i error11_l2 = _mm256_setzero_si256();
+                __m256i error12_l2 = _mm256_setzero_si256();
+                __m256i error13_l2 = _mm256_setzero_si256();
+                __m256i error14_l2 = _mm256_setzero_si256();
+                __m256i error15_l2 = _mm256_setzero_si256();
+
+                __m256i error00_integral = _mm256_setzero_si256();
+                __m256i error01_integral = _mm256_setzero_si256();
+                __m256i error02_integral = _mm256_setzero_si256();
+                __m256i error03_integral = _mm256_setzero_si256();
+                __m256i error04_integral = _mm256_setzero_si256();
+                __m256i error05_integral = _mm256_setzero_si256();
+                __m256i error06_integral = _mm256_setzero_si256();
+                __m256i error07_integral = _mm256_setzero_si256();
+                __m256i error08_integral = _mm256_setzero_si256();
+                __m256i error09_integral = _mm256_setzero_si256();
+                __m256i error10_integral = _mm256_setzero_si256();
+                __m256i error11_integral = _mm256_setzero_si256();
+                __m256i error12_integral = _mm256_setzero_si256();
+                __m256i error13_integral = _mm256_setzero_si256();
+                __m256i error14_integral = _mm256_setzero_si256();
+                __m256i error15_integral = _mm256_setzero_si256();
 
                 for (int k = 0; k < overlap; k++)
                 {
-                    for (int m = 0; m < overlap*3; m+=8)
+                    for (int m = 0; m < overlap * 3; m += 8)
                     {
                         // block2 l2norm
-                        __m256i m00_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 0 + m + blocksize - overlap) * 3]);
-                        __m256i m01_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 1 + m + blocksize - overlap) * 3]);
-                        __m256i m02_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 2 + m + blocksize - overlap) * 3]);
-                        __m256i m03_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 3 + m + blocksize - overlap) * 3]);
-                        __m256i m04_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 4 + m + blocksize - overlap) * 3]);
-                        __m256i m05_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 5 + m + blocksize - overlap) * 3]);
-                        __m256i m06_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 6 + m + blocksize - overlap) * 3]);
-                        __m256i m07_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 7 + m + blocksize - overlap) * 3]);
-                        __m256i m08_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 8 + m + blocksize - overlap) * 3]);
-                        __m256i m09_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 9 + m + blocksize - overlap) * 3]);
-                        __m256i m10_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 10 + m + blocksize - overlap) * 3]);
-                        __m256i m11_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 11 + m + blocksize - overlap) * 3]);
-                        __m256i m12_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 12 + m + blocksize - overlap) * 3]);
-                        __m256i m13_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 13 + m + blocksize - overlap) * 3]);
-                        __m256i m14_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 14 + m + blocksize - overlap) * 3]);
-                        __m256i m15_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 15 + m + blocksize - overlap) * 3]);
-                        __m256i m_out = _mm256_loadu_si256(&out[(orow + k) * ojump + (ocol + m + blocksize - overlap) * 3]);
+                        __m256i m00_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + blocksize - overlap + 0) * 3 + m]);
+                        __m256i m01_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + blocksize - overlap + 1) * 3 + m]);
+                        __m256i m02_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + blocksize - overlap + 2) * 3 + m]);
+                        __m256i m03_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + blocksize - overlap + 3) * 3 + m]);
+                        __m256i m04_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + blocksize - overlap + 4) * 3 + m]);
+                        __m256i m05_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + blocksize - overlap + 5) * 3 + m]);
+                        __m256i m06_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + blocksize - overlap + 6) * 3 + m]);
+                        __m256i m07_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + blocksize - overlap + 7) * 3 + m]);
+                        __m256i m08_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + blocksize - overlap + 8) * 3 + m]);
+                        __m256i m09_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + blocksize - overlap + 9) * 3 + m]);
+                        __m256i m10_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + blocksize - overlap + 10) * 3 + m]);
+                        __m256i m11_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + blocksize - overlap + 11) * 3 + m]);
+                        __m256i m12_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + blocksize - overlap + 12) * 3 + m]);
+                        __m256i m13_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + blocksize - overlap + 13) * 3 + m]);
+                        __m256i m14_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + blocksize - overlap + 14) * 3 + m]);
+                        __m256i m15_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + blocksize - overlap + 15) * 3 + m]);
+                        __m256i m_out = _mm256_loadu_si256(&out[(orow + k) * ojump + (ocol + blocksize - overlap) * 3 + m]);
 
-                        __m256i sub0 = _mm256_sub_epi32(m00_in,m_out);
-                        __m256i sub1 = _mm256_sub_epi32(m01_in,m_out);
-                        __m256i sub2 = _mm256_sub_epi32(m02_in,m_out);
-                        __m256i sub3 = _mm256_sub_epi32(m03_in,m_out);
-                        __m256i sub4 = _mm256_sub_epi32(m04_in,m_out);
-                        __m256i sub5 = _mm256_sub_epi32(m05_in,m_out);
-                        __m256i sub6 = _mm256_sub_epi32(m06_in,m_out);
-                        __m256i sub7 = _mm256_sub_epi32(m07_in,m_out);
-                        __m256i sub8 = _mm256_sub_epi32(m08_in,m_out);
-                        __m256i sub9 = _mm256_sub_epi32(m09_in,m_out);
-                        __m256i sub10 = _mm256_sub_epi32(m10_in,m_out);
-                        __m256i sub11 = _mm256_sub_epi32(m11_in,m_out);
-                        __m256i sub12 = _mm256_sub_epi32(m12_in,m_out);
-                        __m256i sub13 = _mm256_sub_epi32(m13_in,m_out);
-                        __m256i sub14 = _mm256_sub_epi32(m14_in,m_out);
-                        __m256i sub15 = _mm256_sub_epi32(m15_in,m_out);
-
-                        error2_00 = _mm256_add_epi32(_mm256_mullo_epi32(sub0, sub0), error2_00);
-                        error2_01 = _mm256_add_epi32(_mm256_mullo_epi32(sub1, sub1), error2_01);
-                        error2_02 = _mm256_add_epi32(_mm256_mullo_epi32(sub2, sub2), error2_02);
-                        error2_03 = _mm256_add_epi32(_mm256_mullo_epi32(sub3, sub3), error2_03);
-                        error2_04 = _mm256_add_epi32(_mm256_mullo_epi32(sub4, sub4), error2_04);
-                        error2_05 = _mm256_add_epi32(_mm256_mullo_epi32(sub5, sub5), error2_05);
-                        error2_06 = _mm256_add_epi32(_mm256_mullo_epi32(sub6, sub6), error2_06);
-                        error2_07 = _mm256_add_epi32(_mm256_mullo_epi32(sub7, sub7), error2_07);
-                        error2_08 = _mm256_add_epi32(_mm256_mullo_epi32(sub8, sub8), error2_08);
-                        error2_09 = _mm256_add_epi32(_mm256_mullo_epi32(sub9, sub9), error2_09);
-                        error2_10 = _mm256_add_epi32(_mm256_mullo_epi32(sub10, sub10), error2_10);
-                        error2_11 = _mm256_add_epi32(_mm256_mullo_epi32(sub11, sub11), error2_11);
-                        error2_12 = _mm256_add_epi32(_mm256_mullo_epi32(sub12, sub12), error2_12);
-                        error2_13 = _mm256_add_epi32(_mm256_mullo_epi32(sub13, sub13), error2_13);
-                        error2_14 = _mm256_add_epi32(_mm256_mullo_epi32(sub14, sub14), error2_14);
-                        error2_15 = _mm256_add_epi32(_mm256_mullo_epi32(sub15, sub15), error2_15);
-                        /*
-                        diff2r = in[(irow + k) * ijump + (icol + m + blocksize - overlap) * 3 + 0] - out[(orow + k) * ojump + (ocol + m + blocksize - overlap) * 3 + 0];
-                        diff2g = in[(irow + k) * ijump + (icol + m + blocksize - overlap) * 3 + 1] - out[(orow + k) * ojump + (ocol + m + blocksize - overlap) * 3 + 1];
-                        diff2b = in[(irow + k) * ijump + (icol + m + blocksize - overlap) * 3 + 2] - out[(orow + k) * ojump + (ocol + m + blocksize - overlap) * 3 + 2];
-                        error2r += diff2r * diff2r;
-                        error2g += diff2g * diff2g;
-                        error2b += diff2b * diff2b;
-                        */
+                        error00_l2 = _mm256_add_epi32(_mm256_mullo_epi32(_mm256_sub_epi32(m00_in, m_out), _mm256_sub_epi32(m00_in, m_out)), error00_l2);
+                        error01_l2 = _mm256_add_epi32(_mm256_mullo_epi32(_mm256_sub_epi32(m01_in, m_out), _mm256_sub_epi32(m01_in, m_out)), error01_l2);
+                        error02_l2 = _mm256_add_epi32(_mm256_mullo_epi32(_mm256_sub_epi32(m02_in, m_out), _mm256_sub_epi32(m02_in, m_out)), error02_l2);
+                        error03_l2 = _mm256_add_epi32(_mm256_mullo_epi32(_mm256_sub_epi32(m03_in, m_out), _mm256_sub_epi32(m03_in, m_out)), error03_l2);
+                        error04_l2 = _mm256_add_epi32(_mm256_mullo_epi32(_mm256_sub_epi32(m04_in, m_out), _mm256_sub_epi32(m04_in, m_out)), error04_l2);
+                        error05_l2 = _mm256_add_epi32(_mm256_mullo_epi32(_mm256_sub_epi32(m05_in, m_out), _mm256_sub_epi32(m05_in, m_out)), error05_l2);
+                        error06_l2 = _mm256_add_epi32(_mm256_mullo_epi32(_mm256_sub_epi32(m06_in, m_out), _mm256_sub_epi32(m06_in, m_out)), error06_l2);
+                        error07_l2 = _mm256_add_epi32(_mm256_mullo_epi32(_mm256_sub_epi32(m07_in, m_out), _mm256_sub_epi32(m07_in, m_out)), error07_l2);
+                        error08_l2 = _mm256_add_epi32(_mm256_mullo_epi32(_mm256_sub_epi32(m08_in, m_out), _mm256_sub_epi32(m08_in, m_out)), error08_l2);
+                        error09_l2 = _mm256_add_epi32(_mm256_mullo_epi32(_mm256_sub_epi32(m09_in, m_out), _mm256_sub_epi32(m09_in, m_out)), error09_l2);
+                        error10_l2 = _mm256_add_epi32(_mm256_mullo_epi32(_mm256_sub_epi32(m10_in, m_out), _mm256_sub_epi32(m10_in, m_out)), error10_l2);
+                        error11_l2 = _mm256_add_epi32(_mm256_mullo_epi32(_mm256_sub_epi32(m11_in, m_out), _mm256_sub_epi32(m11_in, m_out)), error11_l2);
+                        error12_l2 = _mm256_add_epi32(_mm256_mullo_epi32(_mm256_sub_epi32(m12_in, m_out), _mm256_sub_epi32(m12_in, m_out)), error12_l2);
+                        error13_l2 = _mm256_add_epi32(_mm256_mullo_epi32(_mm256_sub_epi32(m13_in, m_out), _mm256_sub_epi32(m13_in, m_out)), error13_l2);
+                        error14_l2 = _mm256_add_epi32(_mm256_mullo_epi32(_mm256_sub_epi32(m14_in, m_out), _mm256_sub_epi32(m14_in, m_out)), error14_l2);
+                        error15_l2 = _mm256_add_epi32(_mm256_mullo_epi32(_mm256_sub_epi32(m15_in, m_out), _mm256_sub_epi32(m15_in, m_out)), error15_l2);
                     }
-                    for (int m = 0; m < ((blocksize - overlap)*3); m+=8)
-                    {   
+                    for (int m = 0; m < ((blocksize - overlap) * 3); m += 8)
+                    {
 
                         // block 1 -> mul_sum
-                        __m256i m00_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 0 + m) * 3]);
-                        __m256i m01_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 1 + m) * 3]);
-                        __m256i m02_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 2 + m) * 3]);
-                        __m256i m03_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 3 + m) * 3]);
-                        __m256i m04_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 4 + m) * 3]);
-                        __m256i m05_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 5 + m) * 3]);
-                        __m256i m06_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 6 + m) * 3]);
-                        __m256i m07_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 7 + m) * 3]);
-                        __m256i m08_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 8 + m) * 3]);
-                        __m256i m09_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 9 + m) * 3]);
-                        __m256i m10_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 10 + m) * 3]);
-                        __m256i m11_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 11 + m) * 3]);
-                        __m256i m12_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 12 + m) * 3]);
-                        __m256i m13_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 13 + m) * 3]);
-                        __m256i m14_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 14 + m) * 3]);
-                        __m256i m15_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 15 + m) * 3]);
-                        __m256i m_out = _mm256_loadu_si256(&in[(arow + (blocksize - overlap) + k) * ijump + (acol + m) * 3 + 0]);
-                        
+                        __m256i m00_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
+                        __m256i m01_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
+                        __m256i m02_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
+                        __m256i m03_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
+                        __m256i m04_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
+                        __m256i m05_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
+                        __m256i m06_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
+                        __m256i m07_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
+                        __m256i m08_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
+                        __m256i m09_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
+                        __m256i m10_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
+                        __m256i m11_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
+                        __m256i m12_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
+                        __m256i m13_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
+                        __m256i m14_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
+                        __m256i m15_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
+                        __m256i m_out = _mm256_loadu_si256(&in[(arow + (blocksize - overlap) + k) * ijump + acol * 3 + m]);
 
                         // mullo until we found a better solution
-                        error1_00 = _mm256_add_epi32(_mm256_mullo_epi32(m00_in, m_out), error1_00);
-                        error1_01 = _mm256_add_epi32(_mm256_mullo_epi32(m01_in, m_out), error1_01);
-                        error1_02 = _mm256_add_epi32(_mm256_mullo_epi32(m02_in, m_out), error1_02);
-                        error1_03 = _mm256_add_epi32(_mm256_mullo_epi32(m03_in, m_out), error1_03);
-                        error1_04 = _mm256_add_epi32(_mm256_mullo_epi32(m04_in, m_out), error1_04);
-                        error1_05 = _mm256_add_epi32(_mm256_mullo_epi32(m05_in, m_out), error1_05);
-                        error1_06 = _mm256_add_epi32(_mm256_mullo_epi32(m06_in, m_out), error1_06);
-                        error1_07 = _mm256_add_epi32(_mm256_mullo_epi32(m07_in, m_out), error1_07);
-                        error1_08 = _mm256_add_epi32(_mm256_mullo_epi32(m08_in, m_out), error1_08);
-                        error1_09 = _mm256_add_epi32(_mm256_mullo_epi32(m09_in, m_out), error1_09);
-                        error1_10 = _mm256_add_epi32(_mm256_mullo_epi32(m10_in, m_out), error1_10);
-                        error1_11 = _mm256_add_epi32(_mm256_mullo_epi32(m11_in, m_out), error1_11);
-                        error1_12 = _mm256_add_epi32(_mm256_mullo_epi32(m12_in, m_out), error1_12);
-                        error1_13 = _mm256_add_epi32(_mm256_mullo_epi32(m13_in, m_out), error1_13);
-                        error1_14 = _mm256_add_epi32(_mm256_mullo_epi32(m14_in, m_out), error1_14);
-                        error1_15 = _mm256_add_epi32(_mm256_mullo_epi32(m15_in, m_out), error1_15);
-                        /*
-                        diff1r = in[(irow + k) * ijump + (icol + m) * 3 + 0] * in[(arow + (blocksize - overlap) + k) * ijump + (acol + m) * 3 + 0];
-                        diff1g = in[(irow + k) * ijump + (icol + m) * 3 + 1] * in[(arow + (blocksize - overlap) + k) * ijump + (acol + m) * 3 + 1];
-                        diff1b = in[(irow + k) * ijump + (icol + m) * 3 + 2] * in[(arow + (blocksize - overlap) + k) * ijump + (acol + m) * 3 + 2];
-                        error1r += diff1r;
-                        error1g += diff1g;
-                        error1b += diff1b;
-                        */
+                        error00_integral = _mm256_add_epi32(_mm256_mullo_epi32(m00_in, m_out), error00_integral);
+                        error01_integral = _mm256_add_epi32(_mm256_mullo_epi32(m01_in, m_out), error01_integral);
+                        error02_integral = _mm256_add_epi32(_mm256_mullo_epi32(m02_in, m_out), error02_integral);
+                        error03_integral = _mm256_add_epi32(_mm256_mullo_epi32(m03_in, m_out), error03_integral);
+                        error04_integral = _mm256_add_epi32(_mm256_mullo_epi32(m04_in, m_out), error04_integral);
+                        error05_integral = _mm256_add_epi32(_mm256_mullo_epi32(m05_in, m_out), error05_integral);
+                        error06_integral = _mm256_add_epi32(_mm256_mullo_epi32(m06_in, m_out), error06_integral);
+                        error07_integral = _mm256_add_epi32(_mm256_mullo_epi32(m07_in, m_out), error07_integral);
+                        error08_integral = _mm256_add_epi32(_mm256_mullo_epi32(m08_in, m_out), error08_integral);
+                        error09_integral = _mm256_add_epi32(_mm256_mullo_epi32(m09_in, m_out), error09_integral);
+                        error10_integral = _mm256_add_epi32(_mm256_mullo_epi32(m10_in, m_out), error10_integral);
+                        error11_integral = _mm256_add_epi32(_mm256_mullo_epi32(m11_in, m_out), error11_integral);
+                        error12_integral = _mm256_add_epi32(_mm256_mullo_epi32(m12_in, m_out), error12_integral);
+                        error13_integral = _mm256_add_epi32(_mm256_mullo_epi32(m13_in, m_out), error13_integral);
+                        error14_integral = _mm256_add_epi32(_mm256_mullo_epi32(m14_in, m_out), error14_integral);
+                        error15_integral = _mm256_add_epi32(_mm256_mullo_epi32(m15_in, m_out), error15_integral);
                     }
                 }
                 __m256i idx1 = _mm256_set_epi32(6, 7, 4, 5, 2, 3, 0, 1);
+                error00_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error00_l2, idx1), error00_l2);
+                error01_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error01_l2, idx1), error01_l2);
+                error02_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error02_l2, idx1), error02_l2);
+                error03_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error03_l2, idx1), error03_l2);
+                error04_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error04_l2, idx1), error04_l2);
+                error05_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error05_l2, idx1), error05_l2);
+                error06_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error06_l2, idx1), error06_l2);
+                error07_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error07_l2, idx1), error07_l2);
+                error08_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error08_l2, idx1), error08_l2);
+                error09_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error09_l2, idx1), error09_l2);
+                error10_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error10_l2, idx1), error10_l2);
+                error11_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error11_l2, idx1), error11_l2);
+                error12_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error12_l2, idx1), error12_l2);
+                error13_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error13_l2, idx1), error13_l2);
+                error14_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error14_l2, idx1), error14_l2);
+                error15_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error15_l2, idx1), error15_l2);
+
                 __m256i idx2 = _mm256_set_epi32(0, 4, 0, 6, 0, 0, 0, 2);
+                error00_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error00_l2, idx2), error00_l2);
+                error01_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error01_l2, idx2), error01_l2);
+                error02_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error02_l2, idx2), error02_l2);
+                error03_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error03_l2, idx2), error03_l2);
+                error04_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error04_l2, idx2), error04_l2);
+                error05_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error05_l2, idx2), error05_l2);
+                error06_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error06_l2, idx2), error06_l2);
+                error07_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error07_l2, idx2), error07_l2);
+                error08_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error08_l2, idx2), error08_l2);
+                error09_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error09_l2, idx2), error09_l2);
+                error10_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error10_l2, idx2), error10_l2);
+                error11_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error11_l2, idx2), error11_l2);
+                error12_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error12_l2, idx2), error12_l2);
+                error13_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error13_l2, idx2), error13_l2);
+                error14_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error14_l2, idx2), error14_l2);
+                error15_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error15_l2, idx2), error15_l2);
+
                 __m256i idx3 = _mm256_set_epi32(0, 0, 0, 0, 0, 0, 0, 4);
-                error1_00 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_00, idx1), error1_00);
-                error1_01 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_01, idx1), error1_01);
-                error1_02 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_02, idx1), error1_02);
-                error1_03 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_03, idx1), error1_03);
-                error1_04 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_04, idx1), error1_04);
-                error1_05 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_05, idx1), error1_05);
-                error1_06 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_06, idx1), error1_06);
-                error1_07 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_07, idx1), error1_07);
-                error1_08 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_08, idx1), error1_08);
-                error1_09 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_09, idx1), error1_09);
-                error1_10 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_10, idx1), error1_10);
-                error1_11 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_11, idx1), error1_11);
-                error1_12 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_12, idx1), error1_12);
-                error1_13 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_13, idx1), error1_13);
-                error1_14 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_14, idx1), error1_14);
-                error1_15 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_15, idx1), error1_15);
+                error00_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error00_l2, idx3), error00_l2);
+                error01_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error01_l2, idx3), error01_l2);
+                error02_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error02_l2, idx3), error02_l2);
+                error03_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error03_l2, idx3), error03_l2);
+                error04_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error04_l2, idx3), error04_l2);
+                error05_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error05_l2, idx3), error05_l2);
+                error06_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error06_l2, idx3), error06_l2);
+                error07_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error07_l2, idx3), error07_l2);
+                error08_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error08_l2, idx3), error08_l2);
+                error09_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error09_l2, idx3), error09_l2);
+                error10_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error10_l2, idx3), error10_l2);
+                error11_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error11_l2, idx3), error11_l2);
+                error12_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error12_l2, idx3), error12_l2);
+                error13_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error13_l2, idx3), error13_l2);
+                error14_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error14_l2, idx3), error14_l2);
+                error15_l2 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error15_l2, idx3), error15_l2);
 
-                
-                error1_00 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_00, idx2), error1_00);
-                error1_01 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_01, idx2), error1_01);
-                error1_02 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_02, idx2), error1_02);
-                error1_03 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_03, idx2), error1_03);
-                error1_04 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_04, idx2), error1_04);
-                error1_05 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_05, idx2), error1_05);
-                error1_06 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_06, idx2), error1_06);
-                error1_07 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_07, idx2), error1_07);
-                error1_08 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_08, idx2), error1_08);
-                error1_09 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_09, idx2), error1_09);
-                error1_10 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_10, idx2), error1_10);
-                error1_11 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_11, idx2), error1_11);
-                error1_12 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_12, idx2), error1_12);
-                error1_13 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_13, idx2), error1_13);
-                error1_14 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_14, idx2), error1_14);
-                error1_15 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_15, idx2), error1_15);
+                pixel_t result00_l2 = _mm256_extract_epi32(error00_l2, 0);
+                pixel_t result01_l2 = _mm256_extract_epi32(error01_l2, 0);
+                pixel_t result02_l2 = _mm256_extract_epi32(error02_l2, 0);
+                pixel_t result03_l2 = _mm256_extract_epi32(error03_l2, 0);
+                pixel_t result04_l2 = _mm256_extract_epi32(error04_l2, 0);
+                pixel_t result05_l2 = _mm256_extract_epi32(error05_l2, 0);
+                pixel_t result06_l2 = _mm256_extract_epi32(error06_l2, 0);
+                pixel_t result07_l2 = _mm256_extract_epi32(error07_l2, 0);
+                pixel_t result08_l2 = _mm256_extract_epi32(error08_l2, 0);
+                pixel_t result09_l2 = _mm256_extract_epi32(error09_l2, 0);
+                pixel_t result10_l2 = _mm256_extract_epi32(error10_l2, 0);
+                pixel_t result11_l2 = _mm256_extract_epi32(error11_l2, 0);
+                pixel_t result12_l2 = _mm256_extract_epi32(error12_l2, 0);
+                pixel_t result13_l2 = _mm256_extract_epi32(error13_l2, 0);
+                pixel_t result14_l2 = _mm256_extract_epi32(error14_l2, 0);
+                pixel_t result15_l2 = _mm256_extract_epi32(error15_l2, 0);
 
-                
-                error1_00 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_00, idx3), error1_00);
-                error1_01 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_01, idx3), error1_01);
-                error1_02 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_02, idx3), error1_02);
-                error1_03 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_03, idx3), error1_03);
-                error1_04 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_04, idx3), error1_04);
-                error1_05 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_05, idx3), error1_05);
-                error1_06 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_06, idx3), error1_06);
-                error1_07 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_07, idx3), error1_07);
-                error1_08 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_08, idx3), error1_08);
-                error1_09 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_09, idx3), error1_09);
-                error1_10 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_10, idx3), error1_10);
-                error1_11 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_11, idx3), error1_11);
-                error1_12 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_12, idx3), error1_12);
-                error1_13 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_13, idx3), error1_13);
-                error1_14 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_14, idx3), error1_14);
-                error1_15 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error1_15, idx3), error1_15);
+                // ------------------------------------------------------------------------
 
-                pixel_t result1_00 = _mm256_extract_epi32(error1_00, 0);
-                pixel_t result1_01 = _mm256_extract_epi32(error1_01, 0);
-                pixel_t result1_02 = _mm256_extract_epi32(error1_02, 0);
-                pixel_t result1_03 = _mm256_extract_epi32(error1_03, 0);
-                pixel_t result1_04 = _mm256_extract_epi32(error1_04, 0);
-                pixel_t result1_05 = _mm256_extract_epi32(error1_05, 0);
-                pixel_t result1_06 = _mm256_extract_epi32(error1_06, 0);
-                pixel_t result1_07 = _mm256_extract_epi32(error1_07, 0);
-                pixel_t result1_08 = _mm256_extract_epi32(error1_08, 0);
-                pixel_t result1_09 = _mm256_extract_epi32(error1_09, 0);
-                pixel_t result1_10 = _mm256_extract_epi32(error1_10, 0);
-                pixel_t result1_11 = _mm256_extract_epi32(error1_11, 0);
-                pixel_t result1_12 = _mm256_extract_epi32(error1_12, 0);
-                pixel_t result1_13 = _mm256_extract_epi32(error1_13, 0);
-                pixel_t result1_14 = _mm256_extract_epi32(error1_14, 0);
-                pixel_t result1_15 = _mm256_extract_epi32(error1_15, 0);
+                error00_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error00_integral, idx1), error00_integral);
+                error01_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error01_integral, idx1), error01_integral);
+                error02_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error02_integral, idx1), error02_integral);
+                error03_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error03_integral, idx1), error03_integral);
+                error04_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error04_integral, idx1), error04_integral);
+                error05_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error05_integral, idx1), error05_integral);
+                error06_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error06_integral, idx1), error06_integral);
+                error07_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error07_integral, idx1), error07_integral);
+                error08_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error08_integral, idx1), error08_integral);
+                error09_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error09_integral, idx1), error09_integral);
+                error10_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error10_integral, idx1), error10_integral);
+                error11_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error11_integral, idx1), error11_integral);
+                error12_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error12_integral, idx1), error12_integral);
+                error13_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error13_integral, idx1), error13_integral);
+                error14_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error14_integral, idx1), error14_integral);
+                error15_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error15_integral, idx1), error15_integral);
 
-                
-                error2_00 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_00, idx1), error2_00);
-                error2_01 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_01, idx1), error2_01);
-                error2_02 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_02, idx1), error2_02);
-                error2_03 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_03, idx1), error2_03);
-                error2_04 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_04, idx1), error2_04);
-                error2_05 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_05, idx1), error2_05);
-                error2_06 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_06, idx1), error2_06);
-                error2_07 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_07, idx1), error2_07);
-                error2_08 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_08, idx1), error2_08);
-                error2_09 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_09, idx1), error2_09);
-                error2_10 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_10, idx1), error2_10);
-                error2_11 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_11, idx1), error2_11);
-                error2_12 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_12, idx1), error2_12);
-                error2_13 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_13, idx1), error2_13);
-                error2_14 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_14, idx1), error2_14);
-                error2_15 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_15, idx1), error2_15);
+                error00_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error00_integral, idx2), error00_integral);
+                error01_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error01_integral, idx2), error01_integral);
+                error02_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error02_integral, idx2), error02_integral);
+                error03_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error03_integral, idx2), error03_integral);
+                error04_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error04_integral, idx2), error04_integral);
+                error05_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error05_integral, idx2), error05_integral);
+                error06_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error06_integral, idx2), error06_integral);
+                error07_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error07_integral, idx2), error07_integral);
+                error08_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error08_integral, idx2), error08_integral);
+                error09_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error09_integral, idx2), error09_integral);
+                error10_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error10_integral, idx2), error10_integral);
+                error11_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error11_integral, idx2), error11_integral);
+                error12_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error12_integral, idx2), error12_integral);
+                error13_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error13_integral, idx2), error13_integral);
+                error14_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error14_integral, idx2), error14_integral);
+                error15_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error15_integral, idx2), error15_integral);
 
-               
-                error2_00 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_00, idx2), error2_00);
-                error2_01 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_01, idx2), error2_01);
-                error2_02 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_02, idx2), error2_02);
-                error2_03 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_03, idx2), error2_03);
-                error2_04 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_04, idx2), error2_04);
-                error2_05 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_05, idx2), error2_05);
-                error2_06 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_06, idx2), error2_06);
-                error2_07 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_07, idx2), error2_07);
-                error2_08 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_08, idx2), error2_08);
-                error2_09 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_09, idx2), error2_09);
-                error2_10 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_10, idx2), error2_10);
-                error2_11 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_11, idx2), error2_11);
-                error2_12 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_12, idx2), error2_12);
-                error2_13 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_13, idx2), error2_13);
-                error2_14 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_14, idx2), error2_14);
-                error2_15 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_15, idx2), error2_15);
+                error00_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error00_integral, idx3), error00_integral);
+                error01_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error01_integral, idx3), error01_integral);
+                error02_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error02_integral, idx3), error02_integral);
+                error03_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error03_integral, idx3), error03_integral);
+                error04_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error04_integral, idx3), error04_integral);
+                error05_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error05_integral, idx3), error05_integral);
+                error06_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error06_integral, idx3), error06_integral);
+                error07_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error07_integral, idx3), error07_integral);
+                error08_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error08_integral, idx3), error08_integral);
+                error09_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error09_integral, idx3), error09_integral);
+                error10_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error10_integral, idx3), error10_integral);
+                error11_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error11_integral, idx3), error11_integral);
+                error12_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error12_integral, idx3), error12_integral);
+                error13_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error13_integral, idx3), error13_integral);
+                error14_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error14_integral, idx3), error14_integral);
+                error15_integral = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error15_integral, idx3), error15_integral);
 
-               
-                error2_00 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_00, idx3), error2_00);
-                error2_01 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_01, idx3), error2_01);
-                error2_02 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_02, idx3), error2_02);
-                error2_03 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_03, idx3), error2_03);
-                error2_04 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_04, idx3), error2_04);
-                error2_05 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_05, idx3), error2_05);
-                error2_06 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_06, idx3), error2_06);
-                error2_07 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_07, idx3), error2_07);
-                error2_08 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_08, idx3), error2_08);
-                error2_09 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_09, idx3), error2_09);
-                error2_10 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_10, idx3), error2_10);
-                error2_11 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_11, idx3), error2_11);
-                error2_12 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_12, idx3), error2_12);
-                error2_13 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_13, idx3), error2_13);
-                error2_14 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_14, idx3), error2_14);
-                error2_15 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error2_15, idx3), error2_15);
+                pixel_t result00_integral = _mm256_extract_epi32(error00_integral, 0);
+                pixel_t result01_integral = _mm256_extract_epi32(error01_integral, 0);
+                pixel_t result02_integral = _mm256_extract_epi32(error02_integral, 0);
+                pixel_t result03_integral = _mm256_extract_epi32(error03_integral, 0);
+                pixel_t result04_integral = _mm256_extract_epi32(error04_integral, 0);
+                pixel_t result05_integral = _mm256_extract_epi32(error05_integral, 0);
+                pixel_t result06_integral = _mm256_extract_epi32(error06_integral, 0);
+                pixel_t result07_integral = _mm256_extract_epi32(error07_integral, 0);
+                pixel_t result08_integral = _mm256_extract_epi32(error08_integral, 0);
+                pixel_t result09_integral = _mm256_extract_epi32(error09_integral, 0);
+                pixel_t result10_integral = _mm256_extract_epi32(error10_integral, 0);
+                pixel_t result11_integral = _mm256_extract_epi32(error11_integral, 0);
+                pixel_t result12_integral = _mm256_extract_epi32(error12_integral, 0);
+                pixel_t result13_integral = _mm256_extract_epi32(error13_integral, 0);
+                pixel_t result14_integral = _mm256_extract_epi32(error14_integral, 0);
+                pixel_t result15_integral = _mm256_extract_epi32(error15_integral, 0);
 
-                pixel_t result2_00 = _mm256_extract_epi32(error2_00, 0);
-                pixel_t result2_01 = _mm256_extract_epi32(error2_01, 0);
-                pixel_t result2_02 = _mm256_extract_epi32(error2_02, 0);
-                pixel_t result2_03 = _mm256_extract_epi32(error2_03, 0);
-                pixel_t result2_04 = _mm256_extract_epi32(error2_04, 0);
-                pixel_t result2_05 = _mm256_extract_epi32(error2_05, 0);
-                pixel_t result2_06 = _mm256_extract_epi32(error2_06, 0);
-                pixel_t result2_07 = _mm256_extract_epi32(error2_07, 0);
-                pixel_t result2_08 = _mm256_extract_epi32(error2_08, 0);
-                pixel_t result2_09 = _mm256_extract_epi32(error2_09, 0);
-                pixel_t result2_10 = _mm256_extract_epi32(error2_10, 0);
-                pixel_t result2_11 = _mm256_extract_epi32(error2_11, 0);
-                pixel_t result2_12 = _mm256_extract_epi32(error2_12, 0);
-                pixel_t result2_13 = _mm256_extract_epi32(error2_13, 0);
-                pixel_t result2_14 = _mm256_extract_epi32(error2_14, 0);
-                pixel_t result2_15 = _mm256_extract_epi32(error2_15, 0);
-
-                errors[irow * error_width + icol + 0] = result2_00 + block1_out_integral - 2 * result1_00 + block1_in_integral00;
-                errors[irow * error_width + icol + 1] = result2_01 + block1_out_integral - 2 * result1_01 + block1_in_integral01;
-                errors[irow * error_width + icol + 2] = result2_02 + block1_out_integral - 2 * result1_02 + block1_in_integral02;
-                errors[irow * error_width + icol + 3] = result2_03 + block1_out_integral - 2 * result1_03 + block1_in_integral03;
-                errors[irow * error_width + icol + 4] = result2_04 + block1_out_integral - 2 * result1_04 + block1_in_integral04;
-                errors[irow * error_width + icol + 5] = result2_05 + block1_out_integral - 2 * result1_05 + block1_in_integral05;
-                errors[irow * error_width + icol + 6] = result2_06 + block1_out_integral - 2 * result1_06 + block1_in_integral06;
-                errors[irow * error_width + icol + 7] = result2_07 + block1_out_integral - 2 * result1_07 + block1_in_integral07;
-                errors[irow * error_width + icol + 8] = result2_08 + block1_out_integral - 2 * result1_08 + block1_in_integral08;
-                errors[irow * error_width + icol + 9] = result2_09 + block1_out_integral - 2 * result1_09 + block1_in_integral09;
-                errors[irow * error_width + icol + 10] = result2_10 + block1_out_integral - 2 * result1_10 + block1_in_integral10;
-                errors[irow * error_width + icol + 11] = result2_11 + block1_out_integral - 2 * result1_11 + block1_in_integral11;
-                errors[irow * error_width + icol + 12] = result2_12 + block1_out_integral - 2 * result1_12 + block1_in_integral12;
-                errors[irow * error_width + icol + 13] = result2_13 + block1_out_integral - 2 * result1_13 + block1_in_integral13;
-                errors[irow * error_width + icol + 14] = result2_14 + block1_out_integral - 2 * result1_14 + block1_in_integral14;
-                errors[irow * error_width + icol + 15] = result2_15 + block1_out_integral - 2 * result1_15 + block1_in_integral15;
-                //errors[irow * error_width + icol] = error2r + error2g + error2b + block1_out_integral - 2 * (error1r + error1g + error1b) + block1_in_integral;
+                errors[irow * error_width + icol + 0] = result00_l2 + block1_out_integral - 2 * result00_integral + block1_in_integral00;
+                errors[irow * error_width + icol + 1] = result01_l2 + block1_out_integral - 2 * result01_integral + block1_in_integral01;
+                errors[irow * error_width + icol + 2] = result02_l2 + block1_out_integral - 2 * result02_integral + block1_in_integral02;
+                errors[irow * error_width + icol + 3] = result03_l2 + block1_out_integral - 2 * result03_integral + block1_in_integral03;
+                errors[irow * error_width + icol + 4] = result04_l2 + block1_out_integral - 2 * result04_integral + block1_in_integral04;
+                errors[irow * error_width + icol + 5] = result05_l2 + block1_out_integral - 2 * result05_integral + block1_in_integral05;
+                errors[irow * error_width + icol + 6] = result06_l2 + block1_out_integral - 2 * result06_integral + block1_in_integral06;
+                errors[irow * error_width + icol + 7] = result07_l2 + block1_out_integral - 2 * result07_integral + block1_in_integral07;
+                errors[irow * error_width + icol + 8] = result08_l2 + block1_out_integral - 2 * result08_integral + block1_in_integral08;
+                errors[irow * error_width + icol + 9] = result09_l2 + block1_out_integral - 2 * result09_integral + block1_in_integral09;
+                errors[irow * error_width + icol + 10] = result10_l2 + block1_out_integral - 2 * result10_integral + block1_in_integral10;
+                errors[irow * error_width + icol + 11] = result11_l2 + block1_out_integral - 2 * result11_integral + block1_in_integral11;
+                errors[irow * error_width + icol + 12] = result12_l2 + block1_out_integral - 2 * result12_integral + block1_in_integral12;
+                errors[irow * error_width + icol + 13] = result13_l2 + block1_out_integral - 2 * result13_integral + block1_in_integral13;
+                errors[irow * error_width + icol + 14] = result14_l2 + block1_out_integral - 2 * result14_integral + block1_in_integral14;
+                errors[irow * error_width + icol + 15] = result15_l2 + block1_out_integral - 2 * result15_integral + block1_in_integral15;
             }
         }
     }
