@@ -10,36 +10,36 @@ static pixel_t data_gen_integral[] = {
     5, 5, 5, 6, 6, 6, 7, 7, 7, 8, 8, 8,
     9, 9, 9, 10, 10, 10, 11, 11, 11, 255, 255, 255};
 static const image_t in_gen_integral = {data_gen_integral, 4, 3, 3};
-static const pixel_t out_gen_integral[] = {
+static const error_t out_gen_integral[] = {
     0, 0, 0, 0, 0,
     0, 3, 15, 42, 90,
     0, 78, 198, 372, 612,
-    0, 321, 741, 1278, 196593};
+    0, 321, 741, 1278, 196593U};
 
 /* preparation of data for fill_error_matrix (should work with vector assumuption)*/
-#define BLOCKSIZE 24
+#define BLOCKSIZE 32
 #define OVERLAP 8
 #define NUM_BLOCKS 3 /* -> thus we get a 3x3 block image */
-#define INSIZE 100
+#define INSIZE 200
 #define OUTSIZE (NUM_BLOCKS * BLOCKSIZE - (NUM_BLOCKS - 1) * OVERLAP)
 #define ERRSIZE (INSIZE - BLOCKSIZE + 1)
 static pixel_t in[INSIZE * INSIZE * 3]; /* 3 because of the colors */
 static pixel_t out[OUTSIZE * OUTSIZE * 3];
-static pixel_t errors_exp[ERRSIZE * ERRSIZE];
-static pixel_t errors_res[ERRSIZE * ERRSIZE];
-static pixel_t integral[(INSIZE + 1) * (INSIZE + 1)];
+static error_t errors_exp[ERRSIZE * ERRSIZE];
+static error_t errors_res[ERRSIZE * ERRSIZE];
+static error_t integral[(INSIZE + 1) * (INSIZE + 1)];
 static image_t in_img = {in, INSIZE, INSIZE, 3};
 static image_t out_img = {out, OUTSIZE, OUTSIZE, 3};
 
-void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, pixel_t *errors, pixel_t *integral, int lrow, int lcol, int arow, int acol, int blocksize, int overlap, int num_blocks);
-void generate_integral_image(image_t in, pixel_t *out);
+void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *errors, error_t *integral, int lrow, int lcol, int arow, int acol, int blocksize, int overlap, int num_blocks);
+void generate_integral_image(image_t in, error_t *out);
 
 void prepare_in_img()
 {
     for (int i = 0; i < INSIZE; i++)
         for (int j = 0; j < INSIZE * 3; j++)
             // I found doing that not random is quite useful for visual checks
-            in[i * (INSIZE * 3) + j] = i + j / 3;
+            in[i * (INSIZE * 3) + j] = MIN(i + j / 3, 255);
 }
 
 /* basically tell what blocks should be put at that position, array stops with -1
@@ -74,7 +74,7 @@ void prepare_out_img(int rows[], int cols[])
     }
 }
 
-void basic_fill_error_implementation(image_t img_in, image_t img_out, int orow, int ocol, pixel_t *errors)
+void basic_fill_error_implementation(image_t img_in, image_t img_out, int orow, int ocol, error_t *errors)
 {
     for (int i = 0; i < ERRSIZE; i++)
     {
@@ -121,8 +121,8 @@ void test_fill_error_matrix_left_border()
     int orow = 1 * (BLOCKSIZE - OVERLAP);
     int ocol = 0 * (BLOCKSIZE - OVERLAP);
 
-    basic_fill_error_implementation(in_img, out_img, orow, ocol, errors_exp);
     // INTMIN -> should not be used (hopefully undefined behavior gets caught)
+    basic_fill_error_implementation(in_img, out_img, orow, ocol, errors_exp);
     fill_error_matrix(in_img, out_img, orow, ocol, errors_res, integral, INT_MIN, INT_MIN, rows[0], cols[0], BLOCKSIZE, OVERLAP, NUM_BLOCKS);
     int count = 0;
     for (int i = 0; i < ERRSIZE; i++)
@@ -237,7 +237,7 @@ void test_fill_error_matrix_no_border()
 
 void test_generate_integral_image()
 {
-    pixel_t output[(in_gen_integral.height + 1) * (in_gen_integral.width + 1)];
+    error_t output[(in_gen_integral.height + 1) * (in_gen_integral.width + 1)];
     generate_integral_image(in_gen_integral, output);
     for (int i = 0; i < (in_gen_integral.height + 1) * (in_gen_integral.width + 1); i++)
     {
@@ -250,14 +250,14 @@ void test_generate_integral_image()
 
 void test_find_singleton()
 {
-    pixel_t errors[] = {1};
+    error_t errors[] = {1};
     coord xy = find(errors, 1, 1, 100, 1);
     TEST_CHECK(xy.row == 0 && xy.col == 0);
 }
 
 void test_find_tolerance()
 {
-    pixel_t errors[] = {
+    error_t errors[] = {
         10, 20, 30,
         40, 50, 60,
         70, 80, 12};

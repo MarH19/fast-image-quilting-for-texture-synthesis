@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include "image_quilting.h"
 
-static void calc_errors(slice_t slice_1, slice_t slice_2, pixel_t *errors);
-static pixel_t *transpose(pixel_t *mat, int width, int height);
+static void calc_errors(slice_t slice_1, slice_t slice_2, error_t *errors);
+static error_t *transpose(error_t *mat, int width, int height);
 
 // slice_1 and slice_2 of same size are merged into out, left2right = 0 for vertical case, left2right = 1 for left2right case
 // flop count: flops(transpose) + flops(calc_errors) + (s_width * s_height) * (3 * min + add) + s_width * (min + LT) + (s_height - 1) * (3 * min + 2 * EQ)
@@ -27,14 +27,14 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int left2right)
     }
 
     // initialize errors array
-    pixel_t *dp = malloc(sizeof(pixel_t) * width * height);
+    error_t *dp = malloc(sizeof(error_t) * width * height);
 
     calc_errors(slice_1, slice_2, dp);
 
     // transpose errors (now in row format)
     if (left2right)
     {
-        pixel_t *temp = transpose(dp, slice_1.width, slice_1.height);
+        error_t *temp = transpose(dp, slice_1.width, slice_1.height);
         free(dp);
         dp = NULL;
         dp = temp;
@@ -46,7 +46,7 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int left2right)
         for (int j = 0; j < width; j++)
         {
             // per default check middle
-            pixel_t prev = dp[(i - 1) * width + j];
+            error_t prev = dp[(i - 1) * width + j];
             // check left
             if (j > 0)
                 prev = MIN(prev, dp[(i - 1) * width + j - 1]);
@@ -60,10 +60,10 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int left2right)
     //  do backtracking while filling out slice
     // find the min element in the last row of the dp table
     int previdx = 0;
-    pixel_t prevval = PIXEL_T_MAX;
+    error_t prevval = ERROR_T_MAX;
     for (int i = 0; i < width; i++)
     {
-        pixel_t temp_min = dp[(height - 1) * width + i];
+        error_t temp_min = dp[(height - 1) * width + i];
         if (temp_min < prevval)
         {
             previdx = i;
@@ -76,7 +76,7 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int left2right)
     for (int i = height - 1; i >= 0; i--)
     {
         int nextidx = previdx;
-        pixel_t nextval = dp[i * width + nextidx];
+        error_t nextval = dp[i * width + nextidx];
         if (previdx > 0 && dp[i * width + previdx - 1] < nextval)
         {
             nextval = dp[i * width + previdx - 1];
@@ -115,14 +115,14 @@ void dpcut(slice_t slice_1, slice_t slice_2, slice_t out, int left2right)
 
 // errors(i,j) = sum of squared differences of the 3 rgb values
 // flop count: (s_height * s_width) * 3 * (pow + add)
-static void calc_errors(slice_t s1, slice_t s2, pixel_t *errors)
+static void calc_errors(slice_t s1, slice_t s2, error_t *errors)
 {
     for (int i = 0; i < s1.height; i++)
     {
         for (int j = 0; j < s1.width; j++)
         {
             // ssd for one pixel
-            pixel_t error = 0.0;
+            error_t error = 0.0;
             for (int c = 0; c < s1.channels; c++)
             {
                 int idx1 = i * s1.jumpsize + j * s1.channels + c;
@@ -138,9 +138,9 @@ static void calc_errors(slice_t s1, slice_t s2, pixel_t *errors)
 // transpose a matrix
 // flop count: 0
 /* transpose: transposes matrix into new matrix */
-static pixel_t *transpose(pixel_t *mat, int width, int height)
+static error_t *transpose(error_t *mat, int width, int height)
 {
-    pixel_t *mat_t = malloc(sizeof(pixel_t) * width * height);
+    error_t *mat_t = malloc(sizeof(error_t) * width * height);
     for (int i = 0; i < height; i++)
     {
         for (int j = 0; j < width; j++)
