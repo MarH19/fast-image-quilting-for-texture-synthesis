@@ -160,6 +160,7 @@ void test_fill_error_matrix_top_border()
     for (int i = 0; i < ERRSIZE; i++)
         for (int j = 0; j < ERRSIZE; j++)
         {
+            TEST_ASSERT(errors_exp[i * ERRSIZE + j] == errors_res[i * ERRSIZE + j]);
             if (!TEST_CHECK(errors_exp[i * ERRSIZE + j] == errors_res[i * ERRSIZE + j]))
             {
                 count++;
