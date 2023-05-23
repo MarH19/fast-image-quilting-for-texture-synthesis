@@ -152,7 +152,6 @@ void test_fill_error_matrix_top_border()
     // first row of blocks, third col of blocks
     int orow = 0 * (BLOCKSIZE - OVERLAP);
     int ocol = 2 * (BLOCKSIZE - OVERLAP);
-
     basic_fill_error_implementation(in_img, out_img, orow, ocol, errors_exp);
     // INTMIN -> should not be used (hopefully undefined behavior gets caught)
     fill_error_matrix(in_img, out_img, orow, ocol, errors_res, integral, rows[1], cols[1], INT_MIN, INT_MIN, BLOCKSIZE, OVERLAP, NUM_BLOCKS);
@@ -160,7 +159,7 @@ void test_fill_error_matrix_top_border()
     for (int i = 0; i < ERRSIZE; i++)
         for (int j = 0; j < ERRSIZE; j++)
         {
-            TEST_ASSERT(errors_exp[i * ERRSIZE + j] == errors_res[i * ERRSIZE + j]);
+            //TEST_ASSERT(errors_exp[i * ERRSIZE + j] == errors_res[i * ERRSIZE + j]);
             if (!TEST_CHECK(errors_exp[i * ERRSIZE + j] == errors_res[i * ERRSIZE + j]))
             {
                 count++;

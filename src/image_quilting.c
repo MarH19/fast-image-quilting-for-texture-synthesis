@@ -123,26 +123,27 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, pixel_t *e
                         __m256i m15_in = _mm256_loadu_si256(&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
                         __m256i m_out = _mm256_loadu_si256(&in[(lrow + k) * ijump + (lcol + blocksize - overlap) * 3 + m]);
 
-                        error00 = _mm256_add_epi32(_mm256_mul_epu32(m00_in, m_out), error00);
-                        error01 = _mm256_add_epi32(_mm256_mul_epu32(m01_in, m_out), error00);
-                        error02 = _mm256_add_epi32(_mm256_mul_epu32(m02_in, m_out), error00);
-                        error03 = _mm256_add_epi32(_mm256_mul_epu32(m03_in, m_out), error00);
-                        error04 = _mm256_add_epi32(_mm256_mul_epu32(m04_in, m_out), error00);
-                        error05 = _mm256_add_epi32(_mm256_mul_epu32(m05_in, m_out), error00);
-                        error06 = _mm256_add_epi32(_mm256_mul_epu32(m06_in, m_out), error00);
-                        error07 = _mm256_add_epi32(_mm256_mul_epu32(m07_in, m_out), error00);
-                        error08 = _mm256_add_epi32(_mm256_mul_epu32(m08_in, m_out), error00);
-                        error09 = _mm256_add_epi32(_mm256_mul_epu32(m09_in, m_out), error00);
-                        error10 = _mm256_add_epi32(_mm256_mul_epu32(m10_in, m_out), error00);
-                        error11 = _mm256_add_epi32(_mm256_mul_epu32(m11_in, m_out), error00);
-                        error12 = _mm256_add_epi32(_mm256_mul_epu32(m12_in, m_out), error00);
-                        error13 = _mm256_add_epi32(_mm256_mul_epu32(m13_in, m_out), error00);
-                        error14 = _mm256_add_epi32(_mm256_mul_epu32(m14_in, m_out), error00);
-                        error15 = _mm256_add_epi32(_mm256_mul_epu32(m15_in, m_out), error00);
-                        printf("row %d col %d\n", irow + k, icol + m / 8);
+                        // mullo until we found a better solution
+                        error00 = _mm256_add_epi32(_mm256_mullo_epi32(m00_in, m_out), error00);
+                        error01 = _mm256_add_epi32(_mm256_mullo_epi32(m01_in, m_out), error01);
+                        error02 = _mm256_add_epi32(_mm256_mullo_epi32(m02_in, m_out), error02);
+                        error03 = _mm256_add_epi32(_mm256_mullo_epi32(m03_in, m_out), error03);
+                        error04 = _mm256_add_epi32(_mm256_mullo_epi32(m04_in, m_out), error04);
+                        error05 = _mm256_add_epi32(_mm256_mullo_epi32(m05_in, m_out), error05);
+                        error06 = _mm256_add_epi32(_mm256_mullo_epi32(m06_in, m_out), error06);
+                        error07 = _mm256_add_epi32(_mm256_mullo_epi32(m07_in, m_out), error07);
+                        error08 = _mm256_add_epi32(_mm256_mullo_epi32(m08_in, m_out), error08);
+                        error09 = _mm256_add_epi32(_mm256_mullo_epi32(m09_in, m_out), error09);
+                        error10 = _mm256_add_epi32(_mm256_mullo_epi32(m10_in, m_out), error10);
+                        error11 = _mm256_add_epi32(_mm256_mullo_epi32(m11_in, m_out), error11);
+                        error12 = _mm256_add_epi32(_mm256_mullo_epi32(m12_in, m_out), error12);
+                        error13 = _mm256_add_epi32(_mm256_mullo_epi32(m13_in, m_out), error13);
+                        error14 = _mm256_add_epi32(_mm256_mullo_epi32(m14_in, m_out), error14);
+                        error15 = _mm256_add_epi32(_mm256_mullo_epi32(m15_in, m_out), error15);
                     }
                 }
-                __m256i idx1 = _mm256_set_epi32(1, 0, 3, 2, 5, 4, 7, 6);
+
+                __m256i idx1 = _mm256_set_epi32(6, 7, 4, 5, 2, 3, 0, 1);
                 error00 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error00, idx1), error00);
                 error01 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error01, idx1), error01);
                 error02 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error02, idx1), error02);
@@ -160,7 +161,7 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, pixel_t *e
                 error14 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error14, idx1), error14);
                 error15 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error15, idx1), error15);
 
-                __m256i idx2 = _mm256_set_epi32(2, 0, 0, 0, 6, 0, 4, 0);
+                __m256i idx2 = _mm256_set_epi32(0, 4, 0, 6, 0, 0, 0, 2);
                 error00 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error00, idx2), error00);
                 error01 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error01, idx2), error01);
                 error02 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error02, idx2), error02);
@@ -178,7 +179,7 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, pixel_t *e
                 error14 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error14, idx2), error14);
                 error15 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error15, idx2), error15);
 
-                __m256i idx3 = _mm256_set_epi32(4, 0, 0, 0, 0, 0, 0, 0);
+                __m256i idx3 = _mm256_set_epi32(0, 0, 0, 0, 0, 0, 0, 4);
                 error00 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error00, idx3), error00);
                 error01 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error01, idx3), error01);
                 error02 = _mm256_add_epi32(_mm256_permutevar8x32_epi32(error02, idx3), error02);
