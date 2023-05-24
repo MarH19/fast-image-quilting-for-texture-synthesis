@@ -3,8 +3,8 @@
 
 #ifndef IMAGE_QUILTING_HEADER
 #define IMAGE_QUILTING_HEADER
-typedef uint8_t pixel_t;
-#define PIXEL_T_MAX UINT8_MAX
+typedef int16_t pixel_t;
+#define PIXEL_T_MAX INT16_MAX
 typedef uint32_t error_t;
 #define ERROR_T_MAX UINT32_MAX
 
