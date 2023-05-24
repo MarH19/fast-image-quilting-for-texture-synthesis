@@ -28,6 +28,11 @@ static inline uint32_t hsum_8x32(__m256i v)
     return hsum_epi32_avx(sum128);
 }
 
+static inline __m256i loadu_8x16(pixel_t* v)
+{
+    return _mm256_cvtepu8_epi16 (_mm_loadu_si128((__m128i_u *) v));
+}
+
 /*
 orow: output row
 ocol: output col
@@ -120,23 +125,23 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                     int m;
                     for (m = 0; m < overlap * 3 - 15; m += 16)
                     {
-                        __m256i curr_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
-                        __m256i curr_in_01 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
-                        __m256i curr_in_02 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
-                        __m256i curr_in_03 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
-                        __m256i curr_in_04 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
-                        __m256i curr_in_05 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
-                        __m256i curr_in_06 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
-                        __m256i curr_in_07 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
-                        __m256i curr_in_08 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
-                        __m256i curr_in_09 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
-                        __m256i curr_in_10 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
-                        __m256i curr_in_11 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
-                        __m256i curr_in_12 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
-                        __m256i curr_in_13 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
-                        __m256i curr_in_14 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
-                        __m256i curr_in_15 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
-                        __m256i left_in = _mm256_loadu_si256((__m256i_u *)&in[(lrow + k) * ijump + (lcol + blocksize - overlap) * 3 + m]);
+                        __m256i curr_in_00 = loadu_8x16(&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
+                        __m256i curr_in_01 = loadu_8x16(&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
+                        __m256i curr_in_02 = loadu_8x16(&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
+                        __m256i curr_in_03 = loadu_8x16(&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
+                        __m256i curr_in_04 = loadu_8x16(&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
+                        __m256i curr_in_05 = loadu_8x16(&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
+                        __m256i curr_in_06 = loadu_8x16(&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
+                        __m256i curr_in_07 = loadu_8x16(&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
+                        __m256i curr_in_08 = loadu_8x16(&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
+                        __m256i curr_in_09 = loadu_8x16(&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
+                        __m256i curr_in_10 = loadu_8x16(&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
+                        __m256i curr_in_11 = loadu_8x16(&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
+                        __m256i curr_in_12 = loadu_8x16(&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
+                        __m256i curr_in_13 = loadu_8x16(&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
+                        __m256i curr_in_14 = loadu_8x16(&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
+                        __m256i curr_in_15 = loadu_8x16(&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
+                        __m256i left_in = loadu_8x16(&in[(lrow + k) * ijump + (lcol + blocksize - overlap) * 3 + m]);
                         __m256i mull00 = _mm256_madd_epi16(curr_in_00, left_in);
                         __m256i mull01 = _mm256_madd_epi16(curr_in_01, left_in);
                         __m256i mull02 = _mm256_madd_epi16(curr_in_02, left_in);
@@ -172,23 +177,23 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                     }
                     if (overlap % 16 != 0)
                     {
-                        __m256i curr_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
-                        __m256i curr_in_01 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
-                        __m256i curr_in_02 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
-                        __m256i curr_in_03 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
-                        __m256i curr_in_04 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
-                        __m256i curr_in_05 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
-                        __m256i curr_in_06 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
-                        __m256i curr_in_07 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
-                        __m256i curr_in_08 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
-                        __m256i curr_in_09 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
-                        __m256i curr_in_10 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
-                        __m256i curr_in_11 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
-                        __m256i curr_in_12 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
-                        __m256i curr_in_13 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
-                        __m256i curr_in_14 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
-                        __m256i curr_in_15 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
-                        __m256i left_in = _mm256_loadu_si256((__m256i_u *)&in[(lrow + k) * ijump + (lcol + blocksize - overlap) * 3 + m]);
+                        __m256i curr_in_00 = loadu_8x16(&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
+                        __m256i curr_in_01 = loadu_8x16(&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
+                        __m256i curr_in_02 = loadu_8x16(&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
+                        __m256i curr_in_03 = loadu_8x16(&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
+                        __m256i curr_in_04 = loadu_8x16(&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
+                        __m256i curr_in_05 = loadu_8x16(&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
+                        __m256i curr_in_06 = loadu_8x16(&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
+                        __m256i curr_in_07 = loadu_8x16(&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
+                        __m256i curr_in_08 = loadu_8x16(&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
+                        __m256i curr_in_09 = loadu_8x16(&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
+                        __m256i curr_in_10 = loadu_8x16(&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
+                        __m256i curr_in_11 = loadu_8x16(&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
+                        __m256i curr_in_12 = loadu_8x16(&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
+                        __m256i curr_in_13 = loadu_8x16(&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
+                        __m256i curr_in_14 = loadu_8x16(&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
+                        __m256i curr_in_15 = loadu_8x16(&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
+                        __m256i left_in = loadu_8x16(&in[(lrow + k) * ijump + (lcol + blocksize - overlap) * 3 + m]);
                         __m256i mull00 = _mm256_madd_epi16(curr_in_00, left_in);
                         __m256i mull01 = _mm256_madd_epi16(curr_in_01, left_in);
                         __m256i mull02 = _mm256_madd_epi16(curr_in_02, left_in);
@@ -333,23 +338,23 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                     for (m = 0; m < (blocksize - overlap) * 3 - 15; m += 16)
                     {
                         // block1 mulsum part2
-                        __m256i curr_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
-                        __m256i curr_in_01 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
-                        __m256i curr_in_02 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
-                        __m256i curr_in_03 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
-                        __m256i curr_in_04 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
-                        __m256i curr_in_05 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
-                        __m256i curr_in_06 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
-                        __m256i curr_in_07 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
-                        __m256i curr_in_08 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
-                        __m256i curr_in_09 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
-                        __m256i curr_in_10 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
-                        __m256i curr_in_11 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
-                        __m256i curr_in_12 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
-                        __m256i curr_in_13 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
-                        __m256i curr_in_14 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
-                        __m256i curr_in_15 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
-                        __m256i above_in = _mm256_loadu_si256((__m256i_u *)&in[(arow + (blocksize - overlap) + k) * ijump + (acol)*3 + m]);
+                        __m256i curr_in_00 = loadu_8x16(&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
+                        __m256i curr_in_01 = loadu_8x16(&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
+                        __m256i curr_in_02 = loadu_8x16(&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
+                        __m256i curr_in_03 = loadu_8x16(&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
+                        __m256i curr_in_04 = loadu_8x16(&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
+                        __m256i curr_in_05 = loadu_8x16(&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
+                        __m256i curr_in_06 = loadu_8x16(&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
+                        __m256i curr_in_07 = loadu_8x16(&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
+                        __m256i curr_in_08 = loadu_8x16(&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
+                        __m256i curr_in_09 = loadu_8x16(&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
+                        __m256i curr_in_10 = loadu_8x16(&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
+                        __m256i curr_in_11 = loadu_8x16(&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
+                        __m256i curr_in_12 = loadu_8x16(&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
+                        __m256i curr_in_13 = loadu_8x16(&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
+                        __m256i curr_in_14 = loadu_8x16(&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
+                        __m256i curr_in_15 = loadu_8x16(&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
+                        __m256i above_in = loadu_8x16(&in[(arow + (blocksize - overlap) + k) * ijump + (acol)*3 + m]);
                         __m256i mul00 = _mm256_madd_epi16(curr_in_00, above_in);
                         __m256i mul01 = _mm256_madd_epi16(curr_in_01, above_in);
                         __m256i mul02 = _mm256_madd_epi16(curr_in_02, above_in);
@@ -386,23 +391,23 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                     if (overlap % 16 != 0)
                     {
                         // block1 mulsum part3
-                        __m256i curr_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
-                        __m256i curr_in_01 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
-                        __m256i curr_in_02 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
-                        __m256i curr_in_03 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
-                        __m256i curr_in_04 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
-                        __m256i curr_in_05 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
-                        __m256i curr_in_06 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
-                        __m256i curr_in_07 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
-                        __m256i curr_in_08 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
-                        __m256i curr_in_09 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
-                        __m256i curr_in_10 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
-                        __m256i curr_in_11 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
-                        __m256i curr_in_12 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
-                        __m256i curr_in_13 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
-                        __m256i curr_in_14 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
-                        __m256i curr_in_15 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
-                        __m256i above_in = _mm256_loadu_si256((__m256i_u *)&in[(arow + (blocksize - overlap) + k) * ijump + (acol)*3 + m]);
+                        __m256i curr_in_00 = loadu_8x16(&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
+                        __m256i curr_in_01 = loadu_8x16(&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
+                        __m256i curr_in_02 = loadu_8x16(&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
+                        __m256i curr_in_03 = loadu_8x16(&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
+                        __m256i curr_in_04 = loadu_8x16(&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
+                        __m256i curr_in_05 = loadu_8x16(&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
+                        __m256i curr_in_06 = loadu_8x16(&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
+                        __m256i curr_in_07 = loadu_8x16(&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
+                        __m256i curr_in_08 = loadu_8x16(&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
+                        __m256i curr_in_09 = loadu_8x16(&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
+                        __m256i curr_in_10 = loadu_8x16(&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
+                        __m256i curr_in_11 = loadu_8x16(&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
+                        __m256i curr_in_12 = loadu_8x16(&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
+                        __m256i curr_in_13 = loadu_8x16(&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
+                        __m256i curr_in_14 = loadu_8x16(&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
+                        __m256i curr_in_15 = loadu_8x16(&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
+                        __m256i above_in = loadu_8x16(&in[(arow + (blocksize - overlap) + k) * ijump + (acol)*3 + m]);
                         __m256i mul00 = _mm256_madd_epi16(curr_in_00, above_in);
                         __m256i mul01 = _mm256_madd_epi16(curr_in_01, above_in);
                         __m256i mul02 = _mm256_madd_epi16(curr_in_02, above_in);
@@ -437,7 +442,7 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                         error15_block1 = _mm256_add_epi32(error15_block1, _mm256_blend_epi32(mul15, zero, 0b11110000));
 
                         // block2 l2norm part1
-                        __m256i curr_out = _mm256_loadu_si256((__m256i_u *)&out[(orow + k) * ojump + (ocol)*3 + m]);
+                        __m256i curr_out = loadu_8x16(&out[(orow + k) * ojump + (ocol)*3 + m]);
                         __m256i diff00 = _mm256_sub_epi16(curr_in_00, curr_out);
                         __m256i diff01 = _mm256_sub_epi16(curr_in_01, curr_out);
                         __m256i diff02 = _mm256_sub_epi16(curr_in_02, curr_out);
@@ -491,23 +496,23 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                     for (; m < blocksize * 3 - 15; m += 16)
                     {
                         // block2 l2norm part2
-                        __m256i curr_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
-                        __m256i curr_in_01 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
-                        __m256i curr_in_02 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
-                        __m256i curr_in_03 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
-                        __m256i curr_in_04 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
-                        __m256i curr_in_05 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
-                        __m256i curr_in_06 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
-                        __m256i curr_in_07 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
-                        __m256i curr_in_08 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
-                        __m256i curr_in_09 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
-                        __m256i curr_in_10 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
-                        __m256i curr_in_11 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
-                        __m256i curr_in_12 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
-                        __m256i curr_in_13 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
-                        __m256i curr_in_14 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
-                        __m256i curr_in_15 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
-                        __m256i curr_out = _mm256_loadu_si256((__m256i_u *)&out[(orow + k) * ojump + (ocol)*3 + m]);
+                        __m256i curr_in_00 = loadu_8x16(&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
+                        __m256i curr_in_01 = loadu_8x16(&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
+                        __m256i curr_in_02 = loadu_8x16(&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
+                        __m256i curr_in_03 = loadu_8x16(&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
+                        __m256i curr_in_04 = loadu_8x16(&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
+                        __m256i curr_in_05 = loadu_8x16(&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
+                        __m256i curr_in_06 = loadu_8x16(&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
+                        __m256i curr_in_07 = loadu_8x16(&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
+                        __m256i curr_in_08 = loadu_8x16(&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
+                        __m256i curr_in_09 = loadu_8x16(&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
+                        __m256i curr_in_10 = loadu_8x16(&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
+                        __m256i curr_in_11 = loadu_8x16(&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
+                        __m256i curr_in_12 = loadu_8x16(&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
+                        __m256i curr_in_13 = loadu_8x16(&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
+                        __m256i curr_in_14 = loadu_8x16(&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
+                        __m256i curr_in_15 = loadu_8x16(&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
+                        __m256i curr_out = loadu_8x16(&out[(orow + k) * ojump + (ocol)*3 + m]);
                         __m256i diff00 = _mm256_sub_epi16(curr_in_00, curr_out);
                         __m256i diff01 = _mm256_sub_epi16(curr_in_01, curr_out);
                         __m256i diff02 = _mm256_sub_epi16(curr_in_02, curr_out);
@@ -741,23 +746,23 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                     for (m = 0; m < overlap * 3 - 15; m += 16)
                     {
                         // block0 l2norm part1
-                        __m256i curr_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
-                        __m256i curr_in_01 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
-                        __m256i curr_in_02 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
-                        __m256i curr_in_03 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
-                        __m256i curr_in_04 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
-                        __m256i curr_in_05 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
-                        __m256i curr_in_06 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
-                        __m256i curr_in_07 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
-                        __m256i curr_in_08 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
-                        __m256i curr_in_09 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
-                        __m256i curr_in_10 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
-                        __m256i curr_in_11 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
-                        __m256i curr_in_12 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
-                        __m256i curr_in_13 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
-                        __m256i curr_in_14 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
-                        __m256i curr_in_15 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
-                        __m256i curr_out = _mm256_loadu_si256((__m256i_u *)&out[(orow + k) * ojump + (ocol)*3 + m]);
+                        __m256i curr_in_00 = loadu_8x16(&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
+                        __m256i curr_in_01 = loadu_8x16(&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
+                        __m256i curr_in_02 = loadu_8x16(&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
+                        __m256i curr_in_03 = loadu_8x16(&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
+                        __m256i curr_in_04 = loadu_8x16(&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
+                        __m256i curr_in_05 = loadu_8x16(&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
+                        __m256i curr_in_06 = loadu_8x16(&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
+                        __m256i curr_in_07 = loadu_8x16(&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
+                        __m256i curr_in_08 = loadu_8x16(&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
+                        __m256i curr_in_09 = loadu_8x16(&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
+                        __m256i curr_in_10 = loadu_8x16(&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
+                        __m256i curr_in_11 = loadu_8x16(&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
+                        __m256i curr_in_12 = loadu_8x16(&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
+                        __m256i curr_in_13 = loadu_8x16(&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
+                        __m256i curr_in_14 = loadu_8x16(&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
+                        __m256i curr_in_15 = loadu_8x16(&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
+                        __m256i curr_out = loadu_8x16(&out[(orow + k) * ojump + (ocol)*3 + m]);
                         __m256i diff00 = _mm256_sub_epi16(curr_in_00, curr_out);
                         __m256i diff01 = _mm256_sub_epi16(curr_in_01, curr_out);
                         __m256i diff02 = _mm256_sub_epi16(curr_in_02, curr_out);
@@ -794,23 +799,23 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                     if (overlap % 16 != 0)
                     {
                         // block0 l2norm part2
-                        __m256i curr_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
-                        __m256i curr_in_01 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
-                        __m256i curr_in_02 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
-                        __m256i curr_in_03 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
-                        __m256i curr_in_04 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
-                        __m256i curr_in_05 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
-                        __m256i curr_in_06 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
-                        __m256i curr_in_07 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
-                        __m256i curr_in_08 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
-                        __m256i curr_in_09 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
-                        __m256i curr_in_10 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
-                        __m256i curr_in_11 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
-                        __m256i curr_in_12 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
-                        __m256i curr_in_13 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
-                        __m256i curr_in_14 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
-                        __m256i curr_in_15 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
-                        __m256i curr_out = _mm256_loadu_si256((__m256i_u *)&out[(orow + k) * ojump + (ocol)*3 + m]);
+                        __m256i curr_in_00 = loadu_8x16(&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
+                        __m256i curr_in_01 = loadu_8x16(&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
+                        __m256i curr_in_02 = loadu_8x16(&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
+                        __m256i curr_in_03 = loadu_8x16(&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
+                        __m256i curr_in_04 = loadu_8x16(&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
+                        __m256i curr_in_05 = loadu_8x16(&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
+                        __m256i curr_in_06 = loadu_8x16(&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
+                        __m256i curr_in_07 = loadu_8x16(&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
+                        __m256i curr_in_08 = loadu_8x16(&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
+                        __m256i curr_in_09 = loadu_8x16(&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
+                        __m256i curr_in_10 = loadu_8x16(&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
+                        __m256i curr_in_11 = loadu_8x16(&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
+                        __m256i curr_in_12 = loadu_8x16(&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
+                        __m256i curr_in_13 = loadu_8x16(&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
+                        __m256i curr_in_14 = loadu_8x16(&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
+                        __m256i curr_in_15 = loadu_8x16(&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
+                        __m256i curr_out = loadu_8x16(&out[(orow + k) * ojump + (ocol)*3 + m]);
                         __m256i diff00 = _mm256_sub_epi16(curr_in_00, curr_out);
                         __m256i diff01 = _mm256_sub_epi16(curr_in_01, curr_out);
                         __m256i diff02 = _mm256_sub_epi16(curr_in_02, curr_out);
@@ -862,7 +867,7 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
 
                         // block1 mulsum part1
                         // above_in = above-block input number 00
-                        __m256i above_in = _mm256_loadu_si256((__m256i_u *)&in[(arow + (blocksize - overlap) + k) * ijump + (acol)*3 + m]);
+                        __m256i above_in = loadu_8x16(&in[(arow + (blocksize - overlap) + k) * ijump + (acol)*3 + m]);
                         __m256i mul00 = _mm256_madd_epi16(curr_in_00, above_in);
                         __m256i mul01 = _mm256_madd_epi16(curr_in_01, above_in);
                         __m256i mul02 = _mm256_madd_epi16(curr_in_02, above_in);
@@ -900,23 +905,23 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                     for (; m < (blocksize - overlap) * 3 - 15; m += 16)
                     {
                         // block1 mulsum part2
-                        __m256i curr_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
-                        __m256i curr_in_01 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
-                        __m256i curr_in_02 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
-                        __m256i curr_in_03 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
-                        __m256i curr_in_04 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
-                        __m256i curr_in_05 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
-                        __m256i curr_in_06 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
-                        __m256i curr_in_07 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
-                        __m256i curr_in_08 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
-                        __m256i curr_in_09 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
-                        __m256i curr_in_10 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
-                        __m256i curr_in_11 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
-                        __m256i curr_in_12 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
-                        __m256i curr_in_13 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
-                        __m256i curr_in_14 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
-                        __m256i curr_in_15 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
-                        __m256i above_in = _mm256_loadu_si256((__m256i_u *)&in[(arow + (blocksize - overlap) + k) * ijump + (acol)*3 + m]);
+                        __m256i curr_in_00 = loadu_8x16(&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
+                        __m256i curr_in_01 = loadu_8x16(&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
+                        __m256i curr_in_02 = loadu_8x16(&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
+                        __m256i curr_in_03 = loadu_8x16(&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
+                        __m256i curr_in_04 = loadu_8x16(&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
+                        __m256i curr_in_05 = loadu_8x16(&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
+                        __m256i curr_in_06 = loadu_8x16(&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
+                        __m256i curr_in_07 = loadu_8x16(&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
+                        __m256i curr_in_08 = loadu_8x16(&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
+                        __m256i curr_in_09 = loadu_8x16(&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
+                        __m256i curr_in_10 = loadu_8x16(&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
+                        __m256i curr_in_11 = loadu_8x16(&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
+                        __m256i curr_in_12 = loadu_8x16(&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
+                        __m256i curr_in_13 = loadu_8x16(&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
+                        __m256i curr_in_14 = loadu_8x16(&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
+                        __m256i curr_in_15 = loadu_8x16(&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
+                        __m256i above_in = loadu_8x16(&in[(arow + (blocksize - overlap) + k) * ijump + (acol)*3 + m]);
                         __m256i mul00 = _mm256_madd_epi16(curr_in_00, above_in);
                         __m256i mul01 = _mm256_madd_epi16(curr_in_01, above_in);
                         __m256i mul02 = _mm256_madd_epi16(curr_in_02, above_in);
@@ -953,23 +958,23 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                     if (overlap % 16 != 0)
                     {
                         // block1 mulsum part3
-                        __m256i curr_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
-                        __m256i curr_in_01 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
-                        __m256i curr_in_02 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
-                        __m256i curr_in_03 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
-                        __m256i curr_in_04 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
-                        __m256i curr_in_05 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
-                        __m256i curr_in_06 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
-                        __m256i curr_in_07 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
-                        __m256i curr_in_08 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
-                        __m256i curr_in_09 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
-                        __m256i curr_in_10 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
-                        __m256i curr_in_11 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
-                        __m256i curr_in_12 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
-                        __m256i curr_in_13 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
-                        __m256i curr_in_14 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
-                        __m256i curr_in_15 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
-                        __m256i above_in = _mm256_loadu_si256((__m256i_u *)&in[(arow + (blocksize - overlap) + k) * ijump + (acol)*3 + m]);
+                        __m256i curr_in_00 = loadu_8x16(&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
+                        __m256i curr_in_01 = loadu_8x16(&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
+                        __m256i curr_in_02 = loadu_8x16(&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
+                        __m256i curr_in_03 = loadu_8x16(&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
+                        __m256i curr_in_04 = loadu_8x16(&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
+                        __m256i curr_in_05 = loadu_8x16(&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
+                        __m256i curr_in_06 = loadu_8x16(&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
+                        __m256i curr_in_07 = loadu_8x16(&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
+                        __m256i curr_in_08 = loadu_8x16(&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
+                        __m256i curr_in_09 = loadu_8x16(&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
+                        __m256i curr_in_10 = loadu_8x16(&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
+                        __m256i curr_in_11 = loadu_8x16(&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
+                        __m256i curr_in_12 = loadu_8x16(&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
+                        __m256i curr_in_13 = loadu_8x16(&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
+                        __m256i curr_in_14 = loadu_8x16(&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
+                        __m256i curr_in_15 = loadu_8x16(&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
+                        __m256i above_in = loadu_8x16(&in[(arow + (blocksize - overlap) + k) * ijump + (acol)*3 + m]);
                         __m256i mul00 = _mm256_madd_epi16(curr_in_00, above_in);
                         __m256i mul01 = _mm256_madd_epi16(curr_in_01, above_in);
                         __m256i mul02 = _mm256_madd_epi16(curr_in_02, above_in);
@@ -1004,7 +1009,7 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                         error15_block1 = _mm256_add_epi32(error15_block1, _mm256_blend_epi32(mul15, zero, 0b11110000));
 
                         // block2 l2norm part1
-                        __m256i curr_out = _mm256_loadu_si256((__m256i_u *)&out[(orow + k) * ojump + (ocol)*3 + m]);
+                        __m256i curr_out = loadu_8x16(&out[(orow + k) * ojump + (ocol)*3 + m]);
                         __m256i diff00 = _mm256_sub_epi16(curr_in_00, curr_out);
                         __m256i diff01 = _mm256_sub_epi16(curr_in_01, curr_out);
                         __m256i diff02 = _mm256_sub_epi16(curr_in_02, curr_out);
@@ -1058,23 +1063,23 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                     for (; m < blocksize * 3 - 15; m += 16)
                     {
                         // block2 l2norm part2
-                        __m256i curr_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
-                        __m256i curr_in_01 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
-                        __m256i curr_in_02 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
-                        __m256i curr_in_03 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
-                        __m256i curr_in_04 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
-                        __m256i curr_in_05 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
-                        __m256i curr_in_06 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
-                        __m256i curr_in_07 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
-                        __m256i curr_in_08 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
-                        __m256i curr_in_09 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
-                        __m256i curr_in_10 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
-                        __m256i curr_in_11 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
-                        __m256i curr_in_12 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
-                        __m256i curr_in_13 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
-                        __m256i curr_in_14 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
-                        __m256i curr_in_15 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
-                        __m256i curr_out = _mm256_loadu_si256((__m256i_u *)&out[(orow + k) * ojump + (ocol)*3 + m]);
+                        __m256i curr_in_00 = loadu_8x16(&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
+                        __m256i curr_in_01 = loadu_8x16(&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
+                        __m256i curr_in_02 = loadu_8x16(&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
+                        __m256i curr_in_03 = loadu_8x16(&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
+                        __m256i curr_in_04 = loadu_8x16(&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
+                        __m256i curr_in_05 = loadu_8x16(&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
+                        __m256i curr_in_06 = loadu_8x16(&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
+                        __m256i curr_in_07 = loadu_8x16(&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
+                        __m256i curr_in_08 = loadu_8x16(&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
+                        __m256i curr_in_09 = loadu_8x16(&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
+                        __m256i curr_in_10 = loadu_8x16(&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
+                        __m256i curr_in_11 = loadu_8x16(&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
+                        __m256i curr_in_12 = loadu_8x16(&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
+                        __m256i curr_in_13 = loadu_8x16(&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
+                        __m256i curr_in_14 = loadu_8x16(&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
+                        __m256i curr_in_15 = loadu_8x16(&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
+                        __m256i curr_out = loadu_8x16(&out[(orow + k) * ojump + (ocol)*3 + m]);
                         __m256i diff00 = _mm256_sub_epi16(curr_in_00, curr_out);
                         __m256i diff01 = _mm256_sub_epi16(curr_in_01, curr_out);
                         __m256i diff02 = _mm256_sub_epi16(curr_in_02, curr_out);
@@ -1116,23 +1121,23 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                     for (m = 0; m < overlap * 3 - 15; m += 16)
                     {
                         // block3 mulsum part1
-                        __m256i curr_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
-                        __m256i curr_in_01 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
-                        __m256i curr_in_02 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
-                        __m256i curr_in_03 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
-                        __m256i curr_in_04 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
-                        __m256i curr_in_05 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
-                        __m256i curr_in_06 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
-                        __m256i curr_in_07 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
-                        __m256i curr_in_08 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
-                        __m256i curr_in_09 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
-                        __m256i curr_in_10 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
-                        __m256i curr_in_11 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
-                        __m256i curr_in_12 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
-                        __m256i curr_in_13 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
-                        __m256i curr_in_14 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
-                        __m256i curr_in_15 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
-                        __m256i left_in = _mm256_loadu_si256((__m256i_u *)&in[(lrow + k) * ijump + (lcol + blocksize - overlap) * 3 + m]);
+                        __m256i curr_in_00 = loadu_8x16(&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
+                        __m256i curr_in_01 = loadu_8x16(&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
+                        __m256i curr_in_02 = loadu_8x16(&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
+                        __m256i curr_in_03 = loadu_8x16(&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
+                        __m256i curr_in_04 = loadu_8x16(&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
+                        __m256i curr_in_05 = loadu_8x16(&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
+                        __m256i curr_in_06 = loadu_8x16(&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
+                        __m256i curr_in_07 = loadu_8x16(&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
+                        __m256i curr_in_08 = loadu_8x16(&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
+                        __m256i curr_in_09 = loadu_8x16(&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
+                        __m256i curr_in_10 = loadu_8x16(&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
+                        __m256i curr_in_11 = loadu_8x16(&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
+                        __m256i curr_in_12 = loadu_8x16(&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
+                        __m256i curr_in_13 = loadu_8x16(&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
+                        __m256i curr_in_14 = loadu_8x16(&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
+                        __m256i curr_in_15 = loadu_8x16(&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
+                        __m256i left_in = loadu_8x16(&in[(lrow + k) * ijump + (lcol + blocksize - overlap) * 3 + m]);
                         __m256i mull00 = _mm256_madd_epi16(curr_in_00, left_in);
                         __m256i mull01 = _mm256_madd_epi16(curr_in_01, left_in);
                         __m256i mull02 = _mm256_madd_epi16(curr_in_02, left_in);
@@ -1169,23 +1174,23 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                     if (overlap % 16 != 0)
                     {
                         // block3 mulsum part2
-                        __m256i curr_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
-                        __m256i curr_in_01 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
-                        __m256i curr_in_02 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
-                        __m256i curr_in_03 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
-                        __m256i curr_in_04 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
-                        __m256i curr_in_05 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
-                        __m256i curr_in_06 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
-                        __m256i curr_in_07 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
-                        __m256i curr_in_08 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
-                        __m256i curr_in_09 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
-                        __m256i curr_in_10 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
-                        __m256i curr_in_11 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
-                        __m256i curr_in_12 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
-                        __m256i curr_in_13 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
-                        __m256i curr_in_14 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
-                        __m256i curr_in_15 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
-                        __m256i left_in = _mm256_loadu_si256((__m256i_u *)&in[(lrow + k) * ijump + (lcol + blocksize - overlap) * 3 + m]);
+                        __m256i curr_in_00 = loadu_8x16(&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
+                        __m256i curr_in_01 = loadu_8x16(&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
+                        __m256i curr_in_02 = loadu_8x16(&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
+                        __m256i curr_in_03 = loadu_8x16(&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
+                        __m256i curr_in_04 = loadu_8x16(&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
+                        __m256i curr_in_05 = loadu_8x16(&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
+                        __m256i curr_in_06 = loadu_8x16(&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
+                        __m256i curr_in_07 = loadu_8x16(&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
+                        __m256i curr_in_08 = loadu_8x16(&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
+                        __m256i curr_in_09 = loadu_8x16(&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
+                        __m256i curr_in_10 = loadu_8x16(&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
+                        __m256i curr_in_11 = loadu_8x16(&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
+                        __m256i curr_in_12 = loadu_8x16(&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
+                        __m256i curr_in_13 = loadu_8x16(&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
+                        __m256i curr_in_14 = loadu_8x16(&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
+                        __m256i curr_in_15 = loadu_8x16(&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
+                        __m256i left_in = loadu_8x16(&in[(lrow + k) * ijump + (lcol + blocksize - overlap) * 3 + m]);
                         __m256i mull00 = _mm256_madd_epi16(curr_in_00, left_in);
                         __m256i mull01 = _mm256_madd_epi16(curr_in_01, left_in);
                         __m256i mull02 = _mm256_madd_epi16(curr_in_02, left_in);
@@ -1419,23 +1424,23 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                     for (m = 0; m < overlap * 3 - 15; m += 16)
                     {
                         // block0 l2norm part1
-                        __m256i curr_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
-                        __m256i curr_in_01 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
-                        __m256i curr_in_02 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
-                        __m256i curr_in_03 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
-                        __m256i curr_in_04 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
-                        __m256i curr_in_05 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
-                        __m256i curr_in_06 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
-                        __m256i curr_in_07 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
-                        __m256i curr_in_08 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
-                        __m256i curr_in_09 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
-                        __m256i curr_in_10 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
-                        __m256i curr_in_11 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
-                        __m256i curr_in_12 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
-                        __m256i curr_in_13 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
-                        __m256i curr_in_14 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
-                        __m256i curr_in_15 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
-                        __m256i curr_out = _mm256_loadu_si256((__m256i_u *)&out[(orow + k) * ojump + (ocol)*3 + m]);
+                        __m256i curr_in_00 = loadu_8x16(&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
+                        __m256i curr_in_01 = loadu_8x16(&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
+                        __m256i curr_in_02 = loadu_8x16(&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
+                        __m256i curr_in_03 = loadu_8x16(&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
+                        __m256i curr_in_04 = loadu_8x16(&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
+                        __m256i curr_in_05 = loadu_8x16(&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
+                        __m256i curr_in_06 = loadu_8x16(&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
+                        __m256i curr_in_07 = loadu_8x16(&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
+                        __m256i curr_in_08 = loadu_8x16(&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
+                        __m256i curr_in_09 = loadu_8x16(&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
+                        __m256i curr_in_10 = loadu_8x16(&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
+                        __m256i curr_in_11 = loadu_8x16(&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
+                        __m256i curr_in_12 = loadu_8x16(&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
+                        __m256i curr_in_13 = loadu_8x16(&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
+                        __m256i curr_in_14 = loadu_8x16(&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
+                        __m256i curr_in_15 = loadu_8x16(&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
+                        __m256i curr_out = loadu_8x16(&out[(orow + k) * ojump + (ocol)*3 + m]);
                         __m256i diff00 = _mm256_sub_epi16(curr_in_00, curr_out);
                         __m256i diff01 = _mm256_sub_epi16(curr_in_01, curr_out);
                         __m256i diff02 = _mm256_sub_epi16(curr_in_02, curr_out);
@@ -1472,23 +1477,23 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                     if (overlap % 16 != 0)
                     {
                         // block0 l2norm part2
-                        __m256i curr_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
-                        __m256i curr_in_01 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
-                        __m256i curr_in_02 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
-                        __m256i curr_in_03 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
-                        __m256i curr_in_04 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
-                        __m256i curr_in_05 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
-                        __m256i curr_in_06 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
-                        __m256i curr_in_07 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
-                        __m256i curr_in_08 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
-                        __m256i curr_in_09 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
-                        __m256i curr_in_10 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
-                        __m256i curr_in_11 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
-                        __m256i curr_in_12 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
-                        __m256i curr_in_13 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
-                        __m256i curr_in_14 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
-                        __m256i curr_in_15 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
-                        __m256i curr_out = _mm256_loadu_si256((__m256i_u *)&out[(orow + k) * ojump + (ocol)*3 + m]);
+                        __m256i curr_in_00 = loadu_8x16(&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
+                        __m256i curr_in_01 = loadu_8x16(&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
+                        __m256i curr_in_02 = loadu_8x16(&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
+                        __m256i curr_in_03 = loadu_8x16(&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
+                        __m256i curr_in_04 = loadu_8x16(&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
+                        __m256i curr_in_05 = loadu_8x16(&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
+                        __m256i curr_in_06 = loadu_8x16(&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
+                        __m256i curr_in_07 = loadu_8x16(&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
+                        __m256i curr_in_08 = loadu_8x16(&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
+                        __m256i curr_in_09 = loadu_8x16(&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
+                        __m256i curr_in_10 = loadu_8x16(&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
+                        __m256i curr_in_11 = loadu_8x16(&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
+                        __m256i curr_in_12 = loadu_8x16(&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
+                        __m256i curr_in_13 = loadu_8x16(&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
+                        __m256i curr_in_14 = loadu_8x16(&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
+                        __m256i curr_in_15 = loadu_8x16(&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
+                        __m256i curr_out = loadu_8x16(&out[(orow + k) * ojump + (ocol)*3 + m]);
                         __m256i diff00 = _mm256_sub_epi16(curr_in_00, curr_out);
                         __m256i diff01 = _mm256_sub_epi16(curr_in_01, curr_out);
                         __m256i diff02 = _mm256_sub_epi16(curr_in_02, curr_out);
@@ -1540,7 +1545,7 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
 
                         // block1 mulsum part1
                         // above_in = above-block input number 00
-                        __m256i above_in = _mm256_loadu_si256((__m256i_u *)&in[(arow + (blocksize - overlap) + k) * ijump + (acol)*3 + m]);
+                        __m256i above_in = loadu_8x16(&in[(arow + (blocksize - overlap) + k) * ijump + (acol)*3 + m]);
                         __m256i mul00 = _mm256_madd_epi16(curr_in_00, above_in);
                         __m256i mul01 = _mm256_madd_epi16(curr_in_01, above_in);
                         __m256i mul02 = _mm256_madd_epi16(curr_in_02, above_in);
@@ -1578,23 +1583,23 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                     for (; m < (blocksize)*3 - 15; m += 16)
                     {
                         // block1 mulsum part2
-                        __m256i curr_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
-                        __m256i curr_in_01 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
-                        __m256i curr_in_02 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
-                        __m256i curr_in_03 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
-                        __m256i curr_in_04 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
-                        __m256i curr_in_05 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
-                        __m256i curr_in_06 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
-                        __m256i curr_in_07 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
-                        __m256i curr_in_08 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
-                        __m256i curr_in_09 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
-                        __m256i curr_in_10 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
-                        __m256i curr_in_11 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
-                        __m256i curr_in_12 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
-                        __m256i curr_in_13 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
-                        __m256i curr_in_14 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
-                        __m256i curr_in_15 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
-                        __m256i above_in = _mm256_loadu_si256((__m256i_u *)&in[(arow + (blocksize - overlap) + k) * ijump + (acol)*3 + m]);
+                        __m256i curr_in_00 = loadu_8x16(&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
+                        __m256i curr_in_01 = loadu_8x16(&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
+                        __m256i curr_in_02 = loadu_8x16(&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
+                        __m256i curr_in_03 = loadu_8x16(&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
+                        __m256i curr_in_04 = loadu_8x16(&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
+                        __m256i curr_in_05 = loadu_8x16(&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
+                        __m256i curr_in_06 = loadu_8x16(&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
+                        __m256i curr_in_07 = loadu_8x16(&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
+                        __m256i curr_in_08 = loadu_8x16(&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
+                        __m256i curr_in_09 = loadu_8x16(&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
+                        __m256i curr_in_10 = loadu_8x16(&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
+                        __m256i curr_in_11 = loadu_8x16(&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
+                        __m256i curr_in_12 = loadu_8x16(&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
+                        __m256i curr_in_13 = loadu_8x16(&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
+                        __m256i curr_in_14 = loadu_8x16(&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
+                        __m256i curr_in_15 = loadu_8x16(&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
+                        __m256i above_in = loadu_8x16(&in[(arow + (blocksize - overlap) + k) * ijump + (acol)*3 + m]);
                         __m256i mul00 = _mm256_madd_epi16(curr_in_00, above_in);
                         __m256i mul01 = _mm256_madd_epi16(curr_in_01, above_in);
                         __m256i mul02 = _mm256_madd_epi16(curr_in_02, above_in);
@@ -1636,23 +1641,23 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                     for (m = 0; m < overlap * 3 - 15; m += 16)
                     {
                         // block3 mulsum part1
-                        __m256i curr_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
-                        __m256i curr_in_01 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
-                        __m256i curr_in_02 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
-                        __m256i curr_in_03 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
-                        __m256i curr_in_04 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
-                        __m256i curr_in_05 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
-                        __m256i curr_in_06 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
-                        __m256i curr_in_07 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
-                        __m256i curr_in_08 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
-                        __m256i curr_in_09 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
-                        __m256i curr_in_10 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
-                        __m256i curr_in_11 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
-                        __m256i curr_in_12 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
-                        __m256i curr_in_13 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
-                        __m256i curr_in_14 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
-                        __m256i curr_in_15 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
-                        __m256i left_in = _mm256_loadu_si256((__m256i_u *)&in[(lrow + k) * ijump + (lcol + blocksize - overlap) * 3 + m]);
+                        __m256i curr_in_00 = loadu_8x16(&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
+                        __m256i curr_in_01 = loadu_8x16(&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
+                        __m256i curr_in_02 = loadu_8x16(&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
+                        __m256i curr_in_03 = loadu_8x16(&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
+                        __m256i curr_in_04 = loadu_8x16(&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
+                        __m256i curr_in_05 = loadu_8x16(&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
+                        __m256i curr_in_06 = loadu_8x16(&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
+                        __m256i curr_in_07 = loadu_8x16(&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
+                        __m256i curr_in_08 = loadu_8x16(&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
+                        __m256i curr_in_09 = loadu_8x16(&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
+                        __m256i curr_in_10 = loadu_8x16(&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
+                        __m256i curr_in_11 = loadu_8x16(&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
+                        __m256i curr_in_12 = loadu_8x16(&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
+                        __m256i curr_in_13 = loadu_8x16(&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
+                        __m256i curr_in_14 = loadu_8x16(&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
+                        __m256i curr_in_15 = loadu_8x16(&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
+                        __m256i left_in = loadu_8x16(&in[(lrow + k) * ijump + (lcol + blocksize - overlap) * 3 + m]);
                         __m256i mull00 = _mm256_madd_epi16(curr_in_00, left_in);
                         __m256i mull01 = _mm256_madd_epi16(curr_in_01, left_in);
                         __m256i mull02 = _mm256_madd_epi16(curr_in_02, left_in);
@@ -1689,23 +1694,23 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                     if (overlap % 16 != 0)
                     {
                         // block3 mulsum part2
-                        __m256i curr_in_00 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
-                        __m256i curr_in_01 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
-                        __m256i curr_in_02 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
-                        __m256i curr_in_03 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
-                        __m256i curr_in_04 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
-                        __m256i curr_in_05 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
-                        __m256i curr_in_06 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
-                        __m256i curr_in_07 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
-                        __m256i curr_in_08 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
-                        __m256i curr_in_09 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
-                        __m256i curr_in_10 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
-                        __m256i curr_in_11 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
-                        __m256i curr_in_12 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
-                        __m256i curr_in_13 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
-                        __m256i curr_in_14 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
-                        __m256i curr_in_15 = _mm256_loadu_si256((__m256i_u *)&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
-                        __m256i left_in = _mm256_loadu_si256((__m256i_u *)&in[(lrow + k) * ijump + (lcol + blocksize - overlap) * 3 + m]);
+                        __m256i curr_in_00 = loadu_8x16(&in[(irow + k) * ijump + (icol + 0) * 3 + m]);
+                        __m256i curr_in_01 = loadu_8x16(&in[(irow + k) * ijump + (icol + 1) * 3 + m]);
+                        __m256i curr_in_02 = loadu_8x16(&in[(irow + k) * ijump + (icol + 2) * 3 + m]);
+                        __m256i curr_in_03 = loadu_8x16(&in[(irow + k) * ijump + (icol + 3) * 3 + m]);
+                        __m256i curr_in_04 = loadu_8x16(&in[(irow + k) * ijump + (icol + 4) * 3 + m]);
+                        __m256i curr_in_05 = loadu_8x16(&in[(irow + k) * ijump + (icol + 5) * 3 + m]);
+                        __m256i curr_in_06 = loadu_8x16(&in[(irow + k) * ijump + (icol + 6) * 3 + m]);
+                        __m256i curr_in_07 = loadu_8x16(&in[(irow + k) * ijump + (icol + 7) * 3 + m]);
+                        __m256i curr_in_08 = loadu_8x16(&in[(irow + k) * ijump + (icol + 8) * 3 + m]);
+                        __m256i curr_in_09 = loadu_8x16(&in[(irow + k) * ijump + (icol + 9) * 3 + m]);
+                        __m256i curr_in_10 = loadu_8x16(&in[(irow + k) * ijump + (icol + 10) * 3 + m]);
+                        __m256i curr_in_11 = loadu_8x16(&in[(irow + k) * ijump + (icol + 11) * 3 + m]);
+                        __m256i curr_in_12 = loadu_8x16(&in[(irow + k) * ijump + (icol + 12) * 3 + m]);
+                        __m256i curr_in_13 = loadu_8x16(&in[(irow + k) * ijump + (icol + 13) * 3 + m]);
+                        __m256i curr_in_14 = loadu_8x16(&in[(irow + k) * ijump + (icol + 14) * 3 + m]);
+                        __m256i curr_in_15 = loadu_8x16(&in[(irow + k) * ijump + (icol + 15) * 3 + m]);
+                        __m256i left_in = loadu_8x16(&in[(lrow + k) * ijump + (lcol + blocksize - overlap) * 3 + m]);
                         __m256i mull00 = _mm256_madd_epi16(curr_in_00, left_in);
                         __m256i mull01 = _mm256_madd_epi16(curr_in_01, left_in);
                         __m256i mull02 = _mm256_madd_epi16(curr_in_02, left_in);
