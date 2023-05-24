@@ -8,6 +8,25 @@
 
 #define INTEGRAL(start, height, width, jumpsize) (integral[start + height * jumpsize + width] - integral[start + width] - integral[start + height * jumpsize] + integral[start])
 #define VEC32ADD(v) (v[0] + v[1] + v[2] + v[3] + v[4] + v[5] + v[6] + v[7])
+/* reference: https://stackoverflow.com/questions/60108658/fastest-method-to-calculate-sum-of-all-packed-32-bit-integers-using-avx512-or-av */
+// static inline
+static inline uint32_t hsum_epi32_avx(__m128i x)
+{
+    __m128i hi64  = _mm_unpackhi_epi64(x, x); // 3-operand non-destructive AVX lets us save a byte without needing a movdqa
+    __m128i sum64 = _mm_add_epi32(hi64, x);
+    __m128i hi32  = _mm_shuffle_epi32(sum64, _MM_SHUFFLE(2, 3, 0, 1)); // Swap the low two elements
+    __m128i sum32 = _mm_add_epi32(sum64, hi32);
+    return _mm_cvtsi128_si32(sum32);       // movd
+}
+
+// only needs AVX2
+static inline uint32_t hsum_8x32(__m256i v)
+{
+    __m128i sum128 = _mm_add_epi32( 
+                 _mm256_castsi256_si128(v),
+                 _mm256_extracti128_si256(v, 1));
+    return hsum_epi32_avx(sum128);
+}
 
 /*
 orow: output row
@@ -22,7 +41,6 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
     int error_width = in_.width - blocksize + 1;
     int error_height = in_.height - blocksize + 1;
     int integral_width = in_.width + 1;
-    error_t error00_arr[64 / sizeof(error_t)];
     pixel_t *in = in_.data;
     pixel_t *out = out_.data;
     int ijump = in_.channels * in_.width;
@@ -70,8 +88,7 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                         error00 = _mm256_add_epi32(_mm256_blend_epi32(mull00, zero, 0b11110000), error00);
                     }
                 }
-                _mm256_storeu_si256((__m256i_u *)error00_arr, error00);
-                errors[irow * error_width + icol] = block3_out_integral - 2 * VEC32ADD(error00_arr) + block3_in_integral;
+                errors[irow * error_width + icol] = block3_out_integral - 2 * hsum_8x32(error00) + block3_in_integral;
             }
         }
     }
@@ -139,8 +156,7 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                 error00_block02 = error00_block2;
                 error00_block13 = _mm256_slli_epi32(error00_block1, 1);
                 error00 = _mm256_sub_epi32(error00_block02, error00_block13);
-                _mm256_storeu_si256((__m256i_u *)&error00_arr[0], error00);
-                errors[irow * error_width + icol] = block1_out_integral + block1_in_integral + VEC32ADD(error00_arr);
+                errors[irow * error_width + icol] = block1_out_integral + block1_in_integral + hsum_8x32(error00);
             }
         }
     }
@@ -263,8 +279,7 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                 error00_block02 = _mm256_add_epi32(error00_block0, error00_block2);
                 error00_block13 = _mm256_slli_epi32(_mm256_add_epi32(error00_block1, error00_block3), 1);
                 error00 = _mm256_sub_epi32(error00_block02, error00_block13);
-                _mm256_storeu_si256((__m256i_u *)&error00_arr[0], error00);
-                errors[irow * error_width + icol] = block1_out_integral + block1_in_integral + VEC32ADD(error00_arr) + block3_out_integral + block3_in_integral;
+                errors[irow * error_width + icol] = block1_out_integral + block1_in_integral + hsum_8x32(error00) + block3_out_integral + block3_in_integral;
             }
         }
     }
@@ -364,8 +379,7 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                 error00_block02 = error00_block0;
                 error00_block13 = _mm256_slli_epi32(_mm256_add_epi32(error00_block1, error00_block3), 1);
                 error00 = _mm256_sub_epi32(error00_block02, error00_block13);
-                _mm256_storeu_si256((__m256i_u *)&error00_arr[0], error00);
-                errors[irow * error_width + icol] = block1_out_integral + block1_in_integral + VEC32ADD(error00_arr) + block3_out_integral + block3_in_integral;
+                errors[irow * error_width + icol] = block1_out_integral + block1_in_integral + hsum_8x32(error00) + block3_out_integral + block3_in_integral;
             }
         }
     }
