@@ -20,7 +20,7 @@ static const error_t out_gen_integral[] = {
 #define BLOCKSIZE 32
 #define OVERLAP 8
 #define NUM_BLOCKS 3 /* -> thus we get a 3x3 block image */
-#define INSIZE 200
+#define INSIZE 239
 #define OUTSIZE (NUM_BLOCKS * BLOCKSIZE - (NUM_BLOCKS - 1) * OVERLAP)
 #define ERRSIZE (INSIZE - BLOCKSIZE + 1)
 static pixel_t in[INSIZE * INSIZE * 3]; /* 3 because of the colors */
