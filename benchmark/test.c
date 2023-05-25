@@ -83,7 +83,7 @@ int main()
 
     for (int i=0;i<12;i++){
         image_t in = generate_image(inp_sizes[i]);
-        double flops = flop_counter(num_blocks,i,i,overlap,block_size);
+        double flops = flop_counter(num_blocks,inp_sizes[i],inp_sizes[i],overlap,block_size);
         double r = rdtsc(in, block_size, num_blocks, overlap, tolerance);
         // save flops,input size,time (in seconds), cycles into the csv
         fprintf(fp_in,"%lf,%d,%lf,%lf\n", flops, inp_sizes[i], r / FREQUENCY, r);
@@ -134,6 +134,7 @@ int main()
     }
     fclose(fp_nb);
     printf("finished num of blocks test \n");
+    
 }
 
 // gcc -O3 -mfma -fno-tree-vectorize -ffp-contract=fast test.c src/timing.c src/image_quilting.c src/dpcut.c src/imageio.c src/L2norm.c -o benchmark -lm
