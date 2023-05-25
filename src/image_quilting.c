@@ -48,14 +48,14 @@ void calc_errors_(image_t in_, image_t out_, int row_out, int col_out, int block
                         diff13 = in[(i + k) * inj + (j + m) * 3 + 2] - out[(row_out + k) * outj + (col_out + m) * 3 + 2];
                         error1 = error1 + diff11 * diff11 + diff12 * diff12 + diff13 * diff13;
                     }
-                    if (col_out != 0) // subblock 2
+                    if (row_out != 0) // subblock 2
                     {
                         diff21 = in[(i + k) * inj + (j + m + overlap) * 3 + 0] - out[(row_out + k) * outj + (col_out + m + overlap) * 3 + 0];
                         diff22 = in[(i + k) * inj + (j + m + overlap) * 3 + 1] - out[(row_out + k) * outj + (col_out + m + overlap) * 3 + 1];
                         diff23 = in[(i + k) * inj + (j + m + overlap) * 3 + 2] - out[(row_out + k) * outj + (col_out + m + overlap) * 3 + 2];
                         error2 = error2 + diff21 * diff21 + diff22 * diff22 + diff23 * diff23;
                     }
-                    if (row_out != 0) // subblock 3
+                    if (col_out != 0) // subblock 3
                     {
                         diff31 = in[(i + m + overlap) * inj + (j + k) * 3 + 0] - out[(row_out + m + overlap) * outj + (col_out + k) * 3 + 0];
                         diff32 = in[(i + m + overlap) * inj + (j + k) * 3 + 1] - out[(row_out + m + overlap) * outj + (col_out + k) * 3 + 1];
