@@ -33,6 +33,46 @@ static inline __m256i loadu_8x16(pixel_t *v)
     return _mm256_cvtepu8_epi16(_mm_loadu_si128((__m128i_u *)v));
 }
 
+static inline __m256i hsum_8x8x32(__m256i v0, __m256i v1, __m256i v2, __m256i v3, __m256i v4, __m256i v5, __m256i v6, __m256i v7)
+{
+    // cannot be global due to function call but compiler should hopefully optimize it away
+    __m256i permute_idx0 = _mm256_set_epi32(7, 6, 3, 2, 5, 4, 1, 0);
+
+    __m256i v04 = _mm256_hadd_epi32(v0, v4);
+    __m256i v15 = _mm256_hadd_epi32(v1, v5);
+    __m256i v26 = _mm256_hadd_epi32(v2, v6);
+    __m256i v37 = _mm256_hadd_epi32(v3, v7);
+    // now idx: 76543210 -> 76543210
+    //     val: 44004400 -> 44440000
+    __m256i v04p = _mm256_permutevar8x32_epi32(v04, permute_idx0);
+    __m256i v15p = _mm256_permutevar8x32_epi32(v15, permute_idx0);
+    __m256i v26p = _mm256_permutevar8x32_epi32(v26, permute_idx0);
+    __m256i v37p = _mm256_permutevar8x32_epi32(v37, permute_idx0);
+
+    __m256i v0145 = _mm256_hadd_epi32(v04p, v15p);
+    __m256i v2367 = _mm256_hadd_epi32(v26p, v37p);
+    // now idx: 76543210
+    //     val: 55441100
+
+    return _mm256_hadd_epi32(v0145, v2367);
+    // now idx: 76543210
+    //     val: 76543210
+}
+
+// #define INTEGRAL(start, height, width, jumpsize) (integral[start + height * jumpsize + width] - integral[start + width] - integral[start + height * jumpsize] + integral[start])
+static inline __m256i integralx8(int start, int height, int width, int jumpsize, error_t *integral)
+{
+    /* 0 . . 1
+       . . . .
+       2 . . 3
+    */
+    __m256i v0 = _mm256_loadu_si256((__m256i_u *)&integral[start]);
+    __m256i v1 = _mm256_loadu_si256((__m256i_u *)&integral[start + width]);
+    __m256i v2 = _mm256_loadu_si256((__m256i_u *)&integral[start + height * jumpsize]);
+    __m256i v3 = _mm256_loadu_si256((__m256i_u *)&integral[start + height * jumpsize + width]);
+    return _mm256_sub_epi32(_mm256_add_epi32(v3, v0), _mm256_add_epi32(v2, v1));
+}
+
 /*
 orow: output row
 ocol: output col
@@ -87,7 +127,7 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                 int block3_in_integral_start05 = block3_in_integral_base + irow * integral_width + icol + 5;
                 int block3_in_integral_start06 = block3_in_integral_base + irow * integral_width + icol + 6;
                 int block3_in_integral_start07 = block3_in_integral_base + irow * integral_width + icol + 7;
-                
+
                 error_t block3_in_integral00 = INTEGRAL(block3_in_integral_start00, height3, width3, integral_width);
                 error_t block3_in_integral01 = INTEGRAL(block3_in_integral_start01, height3, width3, integral_width);
                 error_t block3_in_integral02 = INTEGRAL(block3_in_integral_start02, height3, width3, integral_width);
@@ -412,10 +452,12 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
         int width3 = overlap;
         // precalculation for block 1
         int block1_out_integral_start = (arow + blocksize - overlap) * integral_width + acol + overlap;
-        error_t block1_out_integral = INTEGRAL(block1_out_integral_start, height1, width1, integral_width);
+        error_t block1_out_integral_scalar = INTEGRAL(block1_out_integral_start, height1, width1, integral_width);
+        __m256i block1_out_integral = _mm256_set1_epi32(block1_out_integral_scalar);
         // precalculation for block 3
         int block3_out_integral_start = (lrow + overlap) * integral_width + lcol + (blocksize - overlap);
-        error_t block3_out_integral = INTEGRAL(block3_out_integral_start, height3, width3, integral_width);
+        error_t block3_out_integral_scalar = INTEGRAL(block3_out_integral_start, height3, width3, integral_width);
+        __m256i block3_out_integral = _mm256_set1_epi32(block3_out_integral_scalar);
 
         for (int irow = 0; irow < error_height; irow++)
         {
@@ -440,41 +482,15 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                 error07 = error07_block0 = error07_block1 = error07_block2 = error07_block3 = error07_block02 = error07_block13 = zero;
 
                 /* calculation of block 1 integral part in-variant */
-                int block1_in_integral_start00 = block1_in_integral_base + irow * integral_width + icol + 0;
-                int block1_in_integral_start01 = block1_in_integral_base + irow * integral_width + icol + 1;
-                int block1_in_integral_start02 = block1_in_integral_base + irow * integral_width + icol + 2;
-                int block1_in_integral_start03 = block1_in_integral_base + irow * integral_width + icol + 3;
-                int block1_in_integral_start04 = block1_in_integral_base + irow * integral_width + icol + 4;
-                int block1_in_integral_start05 = block1_in_integral_base + irow * integral_width + icol + 5;
-                int block1_in_integral_start06 = block1_in_integral_base + irow * integral_width + icol + 6;
-                int block1_in_integral_start07 = block1_in_integral_base + irow * integral_width + icol + 7;
+                int block1_in_integral_start = block1_in_integral_base + irow * integral_width + icol;
+                __m256i block1_in_integral = integralx8(block1_in_integral_start, height1, width1, integral_width, integral);
 
-                error_t block1_in_integral00 = INTEGRAL(block1_in_integral_start00, height1, width1, integral_width);
-                error_t block1_in_integral01 = INTEGRAL(block1_in_integral_start01, height1, width1, integral_width);
-                error_t block1_in_integral02 = INTEGRAL(block1_in_integral_start02, height1, width1, integral_width);
-                error_t block1_in_integral03 = INTEGRAL(block1_in_integral_start03, height1, width1, integral_width);
-                error_t block1_in_integral04 = INTEGRAL(block1_in_integral_start04, height1, width1, integral_width);
-                error_t block1_in_integral05 = INTEGRAL(block1_in_integral_start05, height1, width1, integral_width);
-                error_t block1_in_integral06 = INTEGRAL(block1_in_integral_start06, height1, width1, integral_width);
-                error_t block1_in_integral07 = INTEGRAL(block1_in_integral_start07, height1, width1, integral_width);
+                int block3_in_integral_start = block3_in_integral_base + irow * integral_width + icol;
+                __m256i block3_in_integral = integralx8(block3_in_integral_start, height3, width3, integral_width, integral);
 
-                int block3_in_integral_start00 = block3_in_integral_base + irow * integral_width + icol + 0;
-                int block3_in_integral_start01 = block3_in_integral_base + irow * integral_width + icol + 1;
-                int block3_in_integral_start02 = block3_in_integral_base + irow * integral_width + icol + 2;
-                int block3_in_integral_start03 = block3_in_integral_base + irow * integral_width + icol + 3;
-                int block3_in_integral_start04 = block3_in_integral_base + irow * integral_width + icol + 4;
-                int block3_in_integral_start05 = block3_in_integral_base + irow * integral_width + icol + 5;
-                int block3_in_integral_start06 = block3_in_integral_base + irow * integral_width + icol + 6;
-                int block3_in_integral_start07 = block3_in_integral_base + irow * integral_width + icol + 7;
-
-                error_t block3_in_integral00 = INTEGRAL(block3_in_integral_start00, height3, width3, integral_width);
-                error_t block3_in_integral01 = INTEGRAL(block3_in_integral_start01, height3, width3, integral_width);
-                error_t block3_in_integral02 = INTEGRAL(block3_in_integral_start02, height3, width3, integral_width);
-                error_t block3_in_integral03 = INTEGRAL(block3_in_integral_start03, height3, width3, integral_width);
-                error_t block3_in_integral04 = INTEGRAL(block3_in_integral_start04, height3, width3, integral_width);
-                error_t block3_in_integral05 = INTEGRAL(block3_in_integral_start05, height3, width3, integral_width);
-                error_t block3_in_integral06 = INTEGRAL(block3_in_integral_start06, height3, width3, integral_width);
-                error_t block3_in_integral07 = INTEGRAL(block3_in_integral_start07, height3, width3, integral_width);
+                __m256i block1_integral = _mm256_add_epi32(block1_in_integral, block1_out_integral);
+                __m256i block3_integral = _mm256_add_epi32(block3_in_integral, block3_out_integral);
+                __m256i block_integral = _mm256_add_epi32(block1_integral, block3_integral);
 
                 for (int k = 0; k < overlap; k++)
                 {
@@ -793,14 +809,10 @@ void fill_error_matrix(image_t in_, image_t out_, int orow, int ocol, error_t *e
                 error06 = _mm256_sub_epi32(error06_block02, error06_block13);
                 error07 = _mm256_sub_epi32(error07_block02, error07_block13);
 
-                errors[irow * error_width + icol + 0] = block1_out_integral + block1_in_integral00 + hsum_8x32(error00) + block3_out_integral + block3_in_integral00;
-                errors[irow * error_width + icol + 1] = block1_out_integral + block1_in_integral01 + hsum_8x32(error01) + block3_out_integral + block3_in_integral01;
-                errors[irow * error_width + icol + 2] = block1_out_integral + block1_in_integral02 + hsum_8x32(error02) + block3_out_integral + block3_in_integral02;
-                errors[irow * error_width + icol + 3] = block1_out_integral + block1_in_integral03 + hsum_8x32(error03) + block3_out_integral + block3_in_integral03;
-                errors[irow * error_width + icol + 4] = block1_out_integral + block1_in_integral04 + hsum_8x32(error04) + block3_out_integral + block3_in_integral04;
-                errors[irow * error_width + icol + 5] = block1_out_integral + block1_in_integral05 + hsum_8x32(error05) + block3_out_integral + block3_in_integral05;
-                errors[irow * error_width + icol + 6] = block1_out_integral + block1_in_integral06 + hsum_8x32(error06) + block3_out_integral + block3_in_integral06;
-                errors[irow * error_width + icol + 7] = block1_out_integral + block1_in_integral07 + hsum_8x32(error07) + block3_out_integral + block3_in_integral07;
+                //__m256i error = _mm256_set_epi32(hsum_8x32(error07), hsum_8x32(error06), hsum_8x32(error05), hsum_8x32(error04), hsum_8x32(error03), hsum_8x32(error02), hsum_8x32(error01), hsum_8x32(error00));
+                __m256i error = hsum_8x8x32(error00, error01, error02, error03, error04, error05, error06, error07);
+                __m256i error_with_integral  = _mm256_add_epi32(error, block_integral);
+                _mm256_storeu_si256((__m256i_u *)&errors[irow * error_width + icol], error_with_integral);
             }
         }
     }

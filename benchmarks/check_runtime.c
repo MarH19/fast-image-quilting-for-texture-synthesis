@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "image_quilting.h"
 #include "tsc_x86.h"
-#define NUM_RUNS 5
+#define NUM_RUNS 30
 
 /* just a quick runtime check such that we can easily see improvements in runtime */
 double rdtsc(image_t in, int blocksize, int num_blocks, int overlap, pixel_t nom, pixel_t denom)
