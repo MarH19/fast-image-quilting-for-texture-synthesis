@@ -25,13 +25,9 @@ fig, ax = plt.subplots(figsize=[10, 7])
 n = [i for i in range(12)]
 
 
-ax.plot(base['inputsize'],base['seconds'],marker='s', linewidth=2, color="mediumblue", label='Base implementation')
+ax.plot(opt2['inputsize'],opt2['flops']/opt2['cycles'], marker='o', linewidth=2, color="darkred", label='Optimization 2')
 
-ax.plot(opt1['inputsize'],opt1['seconds'],marker='^', linewidth=2, color="dimgray", label='Optimization 1')
-
-ax.plot(opt2['inputsize'],opt2['seconds'], marker='o', linewidth=2, color="darkred", label='Optimization 2')
-
-ax.plot(opt3['inputsize'],opt3['seconds'], marker='8', linewidth=2, color="darkgreen", label='Optimization 3')
+ax.plot(opt3['inputsize'],opt3['flops']/opt3['cycles'], marker='8', linewidth=2, color="darkgreen", label='Optimization 3')
 
 
 
@@ -41,7 +37,7 @@ plt.xticks(xticks)
 plt.xlim(50, None) 
 
 
-ax.set_ylabel('Runtime [s]', fontsize=14, labelpad=15)#, rotation=0, loc='top')
+ax.set_ylabel('Performance [flops/cycles]', fontsize=14, labelpad=15)#, rotation=0, loc='top')
 
 
 plt.legend(facecolor="white", fontsize=12)
