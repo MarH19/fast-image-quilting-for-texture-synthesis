@@ -44,9 +44,10 @@ plt.legend(facecolor="white", fontsize=12)
 
 ax.set_title('Intel(R) Core(TM) i7-8565U CPU @ 1.80GHz', fontsize=16)
 
+ax.set_ylim(0, None)
 
 ax.grid(axis='x')
-plt.yscale('log') 
+#plt.yscale('log') 
 plt.show()
 
 
