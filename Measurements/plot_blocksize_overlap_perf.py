@@ -37,7 +37,7 @@ xticks = list(zip(base['blocksize'], base['overlap']))
 xtick_labels = [f'({x[0]}, {x[1]})' for x in xticks]
 plt.xticks(range(len(xticks)), xtick_labels)
 
-ax.set_ylabel('Performance [flops/cycles]', fontsize=14, labelpad=15)
+ax.set_ylabel('Performance [intops/cycles]', fontsize=14, labelpad=15)
 
 
 plt.legend(facecolor="white", fontsize=12)

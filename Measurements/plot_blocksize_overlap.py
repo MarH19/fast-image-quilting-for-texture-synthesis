@@ -44,7 +44,7 @@ plt.xticks(range(len(xticks)), xtick_labels)
 ax.set_ylabel('Runtime [s]', fontsize=14, labelpad=15)
 
 
-plt.legend(facecolor="white", fontsize=12)
+plt.legend(facecolor="white", fontsize=12, loc='center right')
 
 ax.set_title('Intel(R) Core(TM) i7-8565U CPU @ 1.80GHz', fontsize=16)
 

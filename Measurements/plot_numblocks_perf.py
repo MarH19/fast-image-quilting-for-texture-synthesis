@@ -34,7 +34,7 @@ plt.xticks(ticks=base['numblocks'])
 ax.set_xlabel('Number of blocks in the output', fontsize=14, labelpad=15)
 
 
-ax.set_ylabel('Performance [flops/cycles]', fontsize=14, labelpad=15)#, rotation=0, loc='top')
+ax.set_ylabel('Performance [intops/cycles]', fontsize=14, labelpad=15)#, rotation=0, loc='top')
 
 
 plt.legend(facecolor="white", fontsize=12)

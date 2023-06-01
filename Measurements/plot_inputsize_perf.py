@@ -27,6 +27,8 @@ n = [i for i in range(12)]
 
 ax.plot(opt2['inputsize'],opt2['flops']/opt2['cycles'], marker='o', linewidth=2, color="darkred", label='Optimization 2')
 
+
+
 ax.plot(opt3['inputsize'],opt3['flops']/opt3['cycles'], marker='8', linewidth=2, color="darkgreen", label='Optimization 3')
 
 
@@ -37,10 +39,10 @@ plt.xticks(xticks)
 plt.xlim(50, None) 
 
 
-ax.set_ylabel('Performance [flops/cycles]', fontsize=14, labelpad=15)#, rotation=0, loc='top')
+ax.set_ylabel('Performance [intops/cycles]', fontsize=14, labelpad=15)#, rotation=0, loc='top')
 
 
-plt.legend(facecolor="white", fontsize=12)
+plt.legend(facecolor="white", fontsize=12, loc='center right')
 
 ax.set_title('Intel(R) Core(TM) i7-8565U CPU @ 1.80GHz', fontsize=16)
 
