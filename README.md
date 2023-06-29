@@ -1,5 +1,5 @@
 ## INFO
-This is the repository of the project from the Advanced Systems Lab course offered at ETH Zurich.
+This is the repository of the project from the Advanced Systems Lab course offered at ETH Zurich. The different tags show the different optimization steps which are also mentioned in the final report.
 
 ## Build Information
 
