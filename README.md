@@ -1,4 +1,5 @@
-# Advanced Systems Lab -- Group 24
+## INFO
+This is the repository of the project from the Advanced Systems Lab course offered at ETH Zurich.
 
 ## Build Information
 
